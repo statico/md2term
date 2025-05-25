@@ -116,8 +116,8 @@ class TerminalRenderer:
             lang = token.get('info', '').strip() or 'text'
 
         try:
-            # Use Rich's syntax highlighting
-            syntax = Syntax(code, lang, theme="monokai", line_numbers=False,
+            # Use Rich's syntax highlighting with a simpler theme for consistency
+            syntax = Syntax(code, lang, theme="ansi_dark", line_numbers=False,
                           background_color="default")
             panel = Panel(syntax, border_style="dim", padding=(0, 1))
             self.console.print(panel)
@@ -197,7 +197,7 @@ class TerminalRenderer:
                 child_text.stylize("bold")
                 text.append_text(child_text)
             elif token['type'] == 'codespan':
-                text.append(token['raw'], style="bold red on grey23")
+                text.append(token['raw'], style="bold red on black")
             elif token['type'] == 'link':
                 link_text = self._render_inline_tokens(token['children'])
                 url = token['attrs']['url']

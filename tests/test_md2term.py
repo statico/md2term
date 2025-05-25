@@ -13,6 +13,11 @@ from md2term import convert, main, TerminalRenderer
 from rich.console import Console
 
 
+def create_test_console(output, width=80):
+    """Create a console with consistent settings for testing."""
+    return Console(file=output, width=width, force_terminal=True, color_system="standard")
+
+
 class TestMarkdownFeatures:
     """Test all markdown features with snapshot testing."""
 
@@ -32,7 +37,7 @@ class TestMarkdownFeatures:
 """
         # Capture the output
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -48,7 +53,7 @@ class TestMarkdownFeatures:
         markdown = """This is a paragraph with **bold text**, _italic text_, and `inline code`. Here's a [link to example](https://example.com) and some more text."""
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -82,7 +87,7 @@ print(fibonacci(10))
 ```'''
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -105,7 +110,7 @@ users.forEach((user) => console.log(greetUser(user)));
 ```'''
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -130,7 +135,7 @@ curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2t
 ```'''
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -149,7 +154,7 @@ curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2t
 - Fourth item with `inline code`"""
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -168,7 +173,7 @@ curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2t
 4. Fourth numbered item"""
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -187,7 +192,7 @@ curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2t
 > It can even contain `inline code` and [links](https://example.com)."""
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -205,7 +210,7 @@ curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2t
 > This is another blockquote to show multiple quotes."""
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -225,7 +230,7 @@ curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2t
 And here's some text after the horizontal rule."""
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -243,7 +248,7 @@ And here's some text after the horizontal rule."""
 The next paragraph shows how text wraps naturally based on the terminal width, which is especially useful for reading long documents in the terminal like man pages."""
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -260,7 +265,7 @@ The next paragraph shows how text wraps naturally based on the terminal width, w
             markdown = f.read()
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -326,7 +331,7 @@ class TestEdgeCases:
     def test_empty_input(self, snapshot):
         """Test empty markdown input."""
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -342,7 +347,7 @@ class TestEdgeCases:
         markdown = "   \n\n   \n   "
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -361,7 +366,7 @@ def hello():
 ```'''
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -377,7 +382,7 @@ def hello():
         markdown = "This has **bold with _italic inside_ and `code`** text."
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -393,7 +398,7 @@ def hello():
         markdown = "This is a long sentence that should wrap multiple times when rendered in a very narrow terminal."
 
         output = io.StringIO()
-        console = Console(file=output, width=20, force_terminal=True)
+        console = create_test_console(output, width=20)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -420,7 +425,7 @@ class TestSpecialCharacters:
         markdown = "# Unicode Test 🚀\n\nThis has émojis 😀 and accénted characters: café, naïve, résumé."
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
@@ -436,7 +441,7 @@ class TestSpecialCharacters:
         markdown = "This has \\*escaped\\* asterisks and \\`escaped\\` backticks."
 
         output = io.StringIO()
-        console = Console(file=output, width=80, force_terminal=True)
+        console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune

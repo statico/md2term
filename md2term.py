@@ -102,7 +102,11 @@ class TerminalRenderer:
     def _render_code_block(self, token: Dict[str, Any]) -> None:
         """Render a code block with syntax highlighting."""
         code = token['raw'].rstrip()
-        lang = token['attrs'].get('info', '').strip() or 'text'
+        # Handle different token structures - some have 'attrs', others have 'info' directly
+        if 'attrs' in token:
+            lang = token['attrs'].get('info', '').strip() or 'text'
+        else:
+            lang = token.get('info', '').strip() or 'text'
 
         try:
             # Use Rich's syntax highlighting
@@ -285,9 +289,15 @@ def main(input_file: Optional[TextIO], width: Optional[int]) -> None:
     try:
         # Read the input
         if input_file is None:
-            # For stdin, we need to process it as a stream to handle large inputs
-            # and code blocks properly
-            process_stream(sys.stdin, width)
+            # For stdin, check if it's a real terminal or test input
+            if hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
+                # Real terminal - use streaming processing
+                process_stream(sys.stdin, width)
+            else:
+                # Test input or pipe - read all at once
+                content = sys.stdin.read()
+                if content.strip():
+                    convert(content, width)
         else:
             # For files, we can read the entire content at once
             content = input_file.read()

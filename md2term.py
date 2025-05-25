@@ -424,9 +424,8 @@ def process_character_stream(input_stream: TextIO, width: Optional[int] = None) 
 @click.command()
 @click.argument("input_file", type=click.File("r"), required=False)
 @click.option("--width", "-w", type=int, help="Override terminal width")
-@click.option("--stream", "-s", is_flag=True, help="Enable character-by-character streaming mode with backtracking")
 @click.version_option(version=__version__)
-def main(input_file: Optional[TextIO], width: Optional[int], stream: bool) -> None:
+def main(input_file: Optional[TextIO], width: Optional[int]) -> None:
     """
     Parse Markdown and turn it into nicely-formatted text for terminal display.
 
@@ -437,36 +436,26 @@ def main(input_file: Optional[TextIO], width: Optional[int], stream: bool) -> No
     - Syntax highlighting for code blocks
     - Proper word wrapping based on terminal width
     - Support for all standard markdown elements
-    - Unified streaming renderer for consistent output
-    - Character-based streaming with backtracking (--stream mode)
+    - Streaming renderer with backtracking for LLM output
+    - Character-by-character processing with minimal flickering
 
-    The --stream mode is designed for LLM output where text arrives in small
-    chunks and markdown syntax may be incomplete until more text arrives.
-    All modes now use the same renderer for consistent beautiful output.
+    The renderer automatically handles both complete files and streaming input,
+    with intelligent backtracking when markdown syntax is incomplete.
     """
     try:
         # Read the input
         if input_file is None:
-            # For stdin, choose processing mode
-            if stream:
-                # Character-by-character streaming mode
+            # For stdin, detect if it's a real terminal or pipe/redirect
+            if hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
+                # Real terminal - use character streaming for interactive input
                 process_character_stream(sys.stdin, width)
-            elif hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
-                # Real terminal - use line-based streaming processing
-                process_stream(sys.stdin, width)
             else:
-                # Test input or pipe - read all at once
-                content = sys.stdin.read()
-                if content.strip():
-                    convert(content, width)
+                # Pipe or redirect - use character streaming for LLM-style streaming
+                process_character_stream(sys.stdin, width)
         else:
-            # For files, choose processing mode
-            if stream:
-                # Character-by-character streaming mode
-                process_character_stream(input_file, width)
-            else:
-                # Read the entire content at once
-                content = input_file.read()
+            # For files, read all at once and use the unified renderer
+            content = input_file.read()
+            if content.strip():
                 convert(content, width)
 
     except KeyboardInterrupt:

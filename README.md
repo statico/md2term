@@ -142,6 +142,10 @@ The above markdown will be rendered with:
 - Cyan numbers for ordered list
 - Horizontal rule separator
 
+## Caveat
+
+This software created almost entirely with [Cursor](https://www.cursor.com/) and [Claude 4 Sonnet](https://www.anthropic.com/).
+
 ## License
 
 This project is open source. Feel free to use and modify as needed.

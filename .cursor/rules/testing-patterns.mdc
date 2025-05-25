@@ -1,6 +1,6 @@
 ---
 description:
-globs:
+globs: *.py
 alwaysApply: false
 ---
 # Testing Patterns for md2term

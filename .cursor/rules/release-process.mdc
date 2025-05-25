@@ -1,6 +1,6 @@
 ---
 description:
-globs:
+globs: *.py
 alwaysApply: false
 ---
 # Release Process for md2term

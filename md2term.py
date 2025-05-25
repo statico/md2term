@@ -235,6 +235,13 @@ class StreamingRenderer:
     def add_text(self, text: str) -> None:
         """Add new text to the buffer and re-render if needed."""
         self.buffer += text
+
+        # If we're adding a large chunk of text, it's likely bulk input
+        # In that case, only render at the end to avoid excessive re-rendering
+        if len(text) > 50:
+            # Large chunk - likely bulk input, defer rendering
+            return
+
         self._render_if_needed()
 
     def render_complete(self, text: str) -> None:
@@ -429,9 +436,9 @@ def process_character_stream(input_stream: TextIO, width: Optional[int] = None) 
 
 def process_smart_stream(input_stream: TextIO, width: Optional[int] = None) -> None:
     """
-    Process markdown from a stream with smart buffering.
+    Process markdown from a stream with character-by-character reading.
 
-    Uses non-blocking reads to detect bulk vs streaming input patterns.
+    Simple and reliable approach that works for all input types.
     """
     # Get terminal width
     if width is None:
@@ -444,68 +451,35 @@ def process_smart_stream(input_stream: TextIO, width: Optional[int] = None) -> N
     renderer = StreamingRenderer(console)
 
     try:
+        # Try to read in small chunks first, fall back to character-by-character
         import select
-        import sys
 
-        # Check if we can use select (Unix-like systems)
-        can_use_select = hasattr(select, 'select') and hasattr(input_stream, 'fileno')
+        if hasattr(select, 'select') and hasattr(input_stream, 'fileno'):
+            # Use select to optimize reading
+            while True:
+                # Check if data is available
+                ready, _, _ = select.select([input_stream], [], [], 0.01)
 
-        if can_use_select:
-            # Try to read everything available immediately (for bulk input like cat)
-            ready, _, _ = select.select([input_stream], [], [], 0)  # Non-blocking check
-
-            if ready:
-                # Read all immediately available data
-                all_data = ""
-                while True:
-                    ready, _, _ = select.select([input_stream], [], [], 0)  # Non-blocking
-                    if ready:
-                        chunk = input_stream.read(8192)
-                        if not chunk:  # EOF
-                            break
-                        all_data += chunk
-                    else:
+                if ready:
+                    # Read a small chunk
+                    chunk = input_stream.read(64)  # Smaller chunks for better streaming
+                    if not chunk:  # EOF
                         break
-
-                if all_data:
-                    # We got bulk data, render it all at once
-                    renderer.render_complete(all_data)
-
-                    # Continue reading any remaining data character by character
-                    while True:
-                        char = input_stream.read(1)
-                        if not char:  # EOF
-                            break
-                        renderer.add_text(char)
+                    renderer.add_text(chunk)
                 else:
-                    # No bulk data, use streaming mode
-                    while True:
-                        char = input_stream.read(1)
-                        if not char:  # EOF
-                            break
-                        renderer.add_text(char)
-            else:
-                # No immediate data, use streaming mode
-                while True:
+                    # No data available, try single character read
                     char = input_stream.read(1)
                     if not char:  # EOF
                         break
                     renderer.add_text(char)
         else:
-            # Fallback to character-by-character for systems without select
+            # Fallback to character-by-character reading
             while True:
                 char = input_stream.read(1)
                 if not char:  # EOF
                     break
                 renderer.add_text(char)
 
-    except (ImportError, OSError):
-        # Fallback to character-by-character if select is not available
-        while True:
-            char = input_stream.read(1)
-            if not char:  # EOF
-                break
-            renderer.add_text(char)
     except KeyboardInterrupt:
         pass
     finally:
@@ -537,7 +511,7 @@ def main(input_file: Optional[TextIO], width: Optional[int]) -> None:
     try:
         # Read the input
         if input_file is None:
-            # For stdin, use smart streaming that adapts to the input source
+            # For stdin, just use character streaming for simplicity and reliability
             process_smart_stream(sys.stdin, width)
         else:
             # For files, read all at once and use the unified renderer

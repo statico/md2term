@@ -421,6 +421,93 @@ def process_character_stream(input_stream: TextIO, width: Optional[int] = None) 
         renderer.finalize()
 
 
+def process_smart_stream(input_stream: TextIO, width: Optional[int] = None) -> None:
+    """
+    Process markdown from a stream with adaptive reading strategy.
+
+    This function tries to detect if we're dealing with fast bulk input (like cat)
+    or slow streaming input (like LLM output or pv throttling) and adapts accordingly.
+    """
+    # Get terminal width
+    if width is None:
+        width = shutil.get_terminal_size().columns
+
+    # Create console with proper width
+    console = Console(width=width, force_terminal=True)
+
+    # Create streaming renderer
+    renderer = StreamingRenderer(console)
+
+    try:
+        import select
+        import sys
+
+        # Check if we can use select (Unix-like systems)
+        can_use_select = hasattr(select, 'select') and hasattr(input_stream, 'fileno')
+
+        if can_use_select:
+            # Try to detect the input pattern by checking initial availability
+            ready, _, _ = select.select([input_stream], [], [], 0.01)  # Very short timeout
+
+            if ready:
+                # Data is immediately available, try to read a chunk
+                chunk = input_stream.read(1024)  # Smaller initial chunk
+                if not chunk:  # EOF
+                    return
+
+                renderer.add_text(chunk)
+
+                # Check if more data is immediately available (bulk input like cat)
+                ready, _, _ = select.select([input_stream], [], [], 0.01)
+
+                if ready:
+                    # Looks like bulk input, read in larger chunks
+                    while True:
+                        ready, _, _ = select.select([input_stream], [], [], 0.05)
+                        if ready:
+                            chunk = input_stream.read(8192)
+                            if not chunk:  # EOF
+                                break
+                            renderer.add_text(chunk)
+                        else:
+                            # No more data immediately available, switch to streaming mode
+                            break
+
+                # Continue with character-by-character for any remaining data
+                while True:
+                    char = input_stream.read(1)
+                    if not char:  # EOF
+                        break
+                    renderer.add_text(char)
+            else:
+                # No immediate data, assume streaming input
+                while True:
+                    char = input_stream.read(1)
+                    if not char:  # EOF
+                        break
+                    renderer.add_text(char)
+        else:
+            # Fallback to character-by-character for systems without select
+            while True:
+                char = input_stream.read(1)
+                if not char:  # EOF
+                    break
+                renderer.add_text(char)
+
+    except (ImportError, OSError):
+        # Fallback to character-by-character if select is not available
+        while True:
+            char = input_stream.read(1)
+            if not char:  # EOF
+                break
+            renderer.add_text(char)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # Finalize the rendering
+        renderer.finalize()
+
+
 @click.command()
 @click.argument("input_file", type=click.File("r"), required=False)
 @click.option("--width", "-w", type=int, help="Override terminal width")
@@ -445,13 +532,8 @@ def main(input_file: Optional[TextIO], width: Optional[int]) -> None:
     try:
         # Read the input
         if input_file is None:
-            # For stdin, detect if it's a real terminal or pipe/redirect
-            if hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
-                # Real terminal - use character streaming for interactive input
-                process_character_stream(sys.stdin, width)
-            else:
-                # Pipe or redirect - use character streaming for LLM-style streaming
-                process_character_stream(sys.stdin, width)
+            # For stdin, use smart streaming that adapts to the input source
+            process_smart_stream(sys.stdin, width)
         else:
             # For files, read all at once and use the unified renderer
             content = input_file.read()

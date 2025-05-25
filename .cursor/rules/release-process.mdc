@@ -1,0 +1,65 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Release Process for md2term
+
+## Version Management
+- Follow [Semantic Versioning](mdc:https:/semver.org)
+- Update version in **both** `md2term.py` and `pyproject.toml`
+- Version must match exactly between files
+
+## Pre-Release Checklist
+1. **Run full test suite**: `uv run pytest -v`
+2. **Check code quality**:
+   - `uv run ruff check .`
+   - `uv run black --check .`
+   - `uv run mypy md2term.py`
+3. **Test CLI manually**:
+   - `echo "# Test" | uv run md2term`
+   - `uv run md2term README.md`
+   - `uv run md2term --help`
+4. **Update CHANGELOG.md** with new features/fixes
+5. **Build package**: `uv build`
+6. **Test built package**: Install wheel and test
+
+## Release Steps
+1. **Create release branch**: `git checkout -b release/v0.x.x`
+2. **Update versions** in both files
+3. **Update CHANGELOG.md** - move items from Unreleased to new version
+4. **Commit changes**: `git commit -m "Release v0.x.x"`
+5. **Create PR** and merge to main
+6. **Create GitHub release** with tag `v0.x.x`
+7. **GitHub Actions will automatically publish to PyPI**
+
+## Version Bumping Rules
+- **Patch (0.1.1)**: Bug fixes, documentation updates
+- **Minor (0.2.0)**: New features, CLI options, backward compatible
+- **Major (1.0.0)**: Breaking changes, API changes
+
+## CHANGELOG Format
+```markdown
+## [0.2.0] - 2025-01-XX
+
+### Added
+- New feature descriptions
+
+### Changed
+- Modified behavior descriptions
+
+### Fixed
+- Bug fix descriptions
+```
+
+## PyPI Publishing
+- Uses GitHub Actions with trusted publishing
+- No manual API keys needed
+- Triggered automatically on GitHub release creation
+- Publishes both wheel and source distribution
+
+## Post-Release
+1. **Verify PyPI upload**: Check https://pypi.org/project/md2term/
+2. **Test installation**: `pip install md2term==0.x.x`
+3. **Update documentation** if needed
+4. **Announce release** in relevant channels

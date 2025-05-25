@@ -1,0 +1,76 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Testing Patterns for md2term
+
+## Test Structure
+All tests should be in `tests/test_md2term.py` following the existing pattern.
+
+## Required Test Categories
+
+### API Tests
+- `test_convert_*`: Test the `convert()` function
+- `test_stream_convert_*`: Test the `stream_convert()` function
+- Test both with various Markdown inputs
+
+### CLI Tests
+- Use `click.testing.CliRunner` for all CLI tests
+- Test `--version` and `--help` options
+- Test file input vs stdin input
+
+### Edge Case Tests
+- Empty input
+- Very large input
+- Malformed Markdown
+- Binary input (should handle gracefully)
+- Keyboard interruption (Ctrl+C)
+
+## Test Data Patterns
+
+### Sample Markdown Inputs
+```python
+SIMPLE_MARKDOWN = "# Hello\n\nThis is **bold** text."
+COMPLEX_MARKDOWN = """
+# Main Title
+
+## Subtitle
+
+This is a paragraph with **bold** and *italic* text.
+
+- List item 1
+- List item 2
+
+```python
+def hello():
+    print("world")
+```
+
+> This is a blockquote
+"""
+```
+
+### CLI Testing Pattern
+```python
+def test_cli_feature():
+    runner = CliRunner()
+    result = runner.invoke(main, ['--option'], input="test input")
+    assert result.exit_code == 0
+    assert "expected output" in result.output
+```
+
+## Streaming Tests
+- Verify streaming and non-streaming produce identical output
+- Test that streaming actually streams (not all at once)
+- Test interruption during streaming
+
+## Performance Tests
+- Test with large documents (>1MB)
+- Verify streaming doesn't consume excessive memory
+- Test delay parameter works correctly
+
+## Test Utilities
+Keep test helper functions minimal and focused:
+- `create_temp_file()` for file input tests
+- `assert_markdown_formatted()` for output validation

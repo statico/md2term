@@ -1,0 +1,97 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# md2term Project Rules
+
+## Project Overview
+
+This is `md2term`, a Python CLI tool that parses Markdown and converts it to nicely-formatted terminal text. The project uses a **single-file architecture** for simplicity.
+
+## Key Architecture Decisions
+
+- **Single file structure**: All code is in `md2term.py` at the project root (not in src/)
+- **uv for dependency management**: Use `uv` instead of pip/poetry
+- **Streaming functionality**: The tool can stream output character-by-character
+- **Click for CLI**: Uses Click framework for command-line interface
+- **Stub implementation**: Currently echoes input, ready for Markdown parsing implementation
+
+## File Structure
+
+```
+md2term/
+├── md2term.py              # Main module (ALL CODE HERE)
+├── pyproject.toml          # Project config, dependencies, scripts
+├── tests/test_md2term.py   # Test suite
+├── README.md               # Documentation
+├── CHANGELOG.md            # Version history
+└── .github/workflows/      # CI/CD (Python 3.13 only)
+```
+
+## Development Commands
+
+```bash
+# Setup
+uv sync --all-extras
+
+# Run the tool
+uv run md2term [file]
+echo "text" | uv run md2term
+uv run md2term --help
+
+# Testing & Quality
+uv run pytest -v
+uv run ruff check .
+uv run black .
+uv run mypy md2term.py
+
+# Build for distribution
+uv build
+```
+
+## Code Style Rules
+
+- Use Black formatting (line length 88)
+- Use Ruff for linting
+- Use mypy for type checking
+- All functions must have type hints
+- All public functions must have docstrings
+- Follow Click patterns for CLI options
+
+## When Making Changes
+
+1. **Always edit `md2term.py`** - never create separate modules
+2. **Update tests** in `tests/test_md2term.py` for new functionality
+3. **Run the full test suite** before committing
+4. **Update version** in both `md2term.py` and `pyproject.toml`
+5. **Update CHANGELOG.md** for notable changes
+
+## CLI Interface Rules
+
+- Use Click decorators for all CLI functionality
+- Support both file input and stdin
+- Always include `--help` and `--version`
+- Use `--stream/--no-stream` for output control
+- Use `--delay` for streaming speed control
+- Handle KeyboardInterrupt gracefully
+
+## Testing Rules
+
+- Test both Python API (`convert`, `stream_convert`) and CLI (`main`)
+- Use Click's `CliRunner` for CLI testing
+- Test edge cases: empty input, large input, interruption
+- Keep test imports minimal (no unused imports)
+
+## Dependencies
+
+- **Runtime**: click, rich, markdown
+- **Dev**: pytest, pytest-cov, black, ruff, mypy
+- **Python**: 3.8+ (but CI only tests 3.13)
+
+## Publishing Notes
+
+- Uses GitHub Actions for CI/CD
+- Publishes to PyPI on release
+- Uses trusted publishing (no API keys needed)
+- Build with `uv build`, creates wheel + sdist

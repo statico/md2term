@@ -6,6 +6,7 @@ import sys
 import os
 import shutil
 import re
+import time
 from typing import Optional, TextIO, List, Dict, Any
 from io import StringIO
 import click
@@ -210,6 +211,132 @@ class TerminalRenderer:
         return text
 
 
+class StreamingRenderer:
+    """Unified renderer that handles both streaming and non-streaming with minimal flickering."""
+
+    def __init__(self, console: Console):
+        self.console = console
+        self.buffer = ""
+        self.last_output_lines = 0
+        self.last_was_incomplete = False
+
+        # Patterns for detecting incomplete markdown syntax
+        self.incomplete_patterns = [
+            r'\*[^*\n]*$',         # Incomplete bold/italic (single *)
+            r'\*\*[^*\n]*$',       # Incomplete bold (**)
+            r'_[^_\n]*$',          # Incomplete italic (single _)
+            r'__[^_\n]*$',         # Incomplete italic (__)
+            r'`[^`\n]*$',          # Incomplete inline code
+            r'\[[^\]\n]*$',        # Incomplete link text
+            r'\]\([^)\n]*$',       # Incomplete link URL
+            r'^#{1,6}\s*[^\n]*$',  # Incomplete heading (no newline yet)
+        ]
+
+    def add_text(self, text: str) -> None:
+        """Add new text to the buffer and re-render if needed."""
+        self.buffer += text
+        self._render_if_needed()
+
+    def render_complete(self, text: str) -> None:
+        """Render complete text (for non-streaming mode)."""
+        self.buffer = text
+        self._render_markdown()
+
+    def _render_if_needed(self) -> None:
+        """Only re-render when transitioning between incomplete and complete states."""
+        is_incomplete = self._has_incomplete_syntax()
+
+        # Only re-render if:
+        # 1. We transition from incomplete to complete (backtracking)
+        # 2. We have complete syntax and this is the first render
+        # 3. We end with newline (paragraph completion)
+        should_render = (
+            (self.last_was_incomplete and not is_incomplete) or  # Transition to complete
+            (not is_incomplete and self.last_output_lines == 0) or  # First complete render
+            self.buffer.endswith('\n')  # Paragraph completion
+        )
+
+        if should_render:
+            if is_incomplete:
+                self._render_plain_text()
+            else:
+                self._render_markdown()
+
+        self.last_was_incomplete = is_incomplete
+
+    def _has_incomplete_syntax(self) -> bool:
+        """Check if the buffer contains incomplete markdown syntax."""
+        # Don't treat as incomplete if we end with whitespace or newline
+        if self.buffer.endswith(('\n', ' ', '\t')):
+            return False
+
+        # Get the current line being typed
+        lines = self.buffer.split('\n')
+        current_line = lines[-1] if lines else ""
+
+        # Check for incomplete patterns
+        for pattern in self.incomplete_patterns:
+            if re.search(pattern, current_line):
+                return True
+
+        # Special case: check for incomplete code blocks
+        code_block_count = self.buffer.count('```')
+        if code_block_count % 2 == 1:  # Odd number means incomplete code block
+            return True
+
+        return False
+
+    def _render_plain_text(self) -> None:
+        """Render the buffer as plain text."""
+        self._clear_previous_output()
+        self.console.print(self.buffer, end="")
+        self.last_output_lines = self.buffer.count('\n')
+        if self.buffer and not self.buffer.endswith('\n'):
+            self.last_output_lines += 1
+
+    def _render_markdown(self) -> None:
+        """Render the buffer as parsed markdown using TerminalRenderer."""
+        try:
+            self._clear_previous_output()
+
+            # Parse and render the markdown using the same TerminalRenderer
+            markdown = mistune.create_markdown(renderer=None)
+            tokens = markdown(self.buffer)
+
+            renderer = TerminalRenderer(self.console)
+            renderer.render(tokens)
+
+            # Count lines in the output by capturing it
+            output_buffer = StringIO()
+            temp_console = Console(file=output_buffer, width=self.console.size.width, force_terminal=True)
+            temp_renderer = TerminalRenderer(temp_console)
+            temp_renderer.render(tokens)
+            output = output_buffer.getvalue()
+
+            self.last_output_lines = output.count('\n')
+            if output and not output.endswith('\n'):
+                self.last_output_lines += 1
+
+        except Exception:
+            # Fallback to plain text if parsing fails
+            self._render_plain_text()
+
+    def _clear_previous_output(self) -> None:
+        """Clear the previous output by moving cursor up and clearing lines."""
+        if self.last_output_lines > 0:
+            for _ in range(self.last_output_lines):
+                self.console.file.write("\033[1A\033[2K")
+            self.console.file.flush()
+
+    def finalize(self) -> None:
+        """Finalize the rendering (called when input is complete)."""
+        # Force a final markdown render
+        self._render_markdown()
+        # Ensure we end with a newline if we don't already
+        if self.buffer and not self.buffer.endswith('\n'):
+            self.console.print()
+
+
 def convert(markdown_text: str, width: Optional[int] = None) -> None:
     """
     Convert markdown text to terminal-formatted text and print it.
@@ -225,53 +352,81 @@ def convert(markdown_text: str, width: Optional[int] = None) -> None:
     # Create console with proper width
     console = Console(width=width, force_terminal=True)
 
-    # Parse markdown
-    markdown = mistune.create_markdown(renderer=None)
-    tokens = markdown(markdown_text)
-
-    # Render to terminal
-    renderer = TerminalRenderer(console)
-    renderer.render(tokens)
+    # Use the unified streaming renderer for consistent output
+    renderer = StreamingRenderer(console)
+    renderer.render_complete(markdown_text)
 
 
 def process_stream(input_stream: TextIO, width: Optional[int] = None) -> None:
     """
-    Process markdown from a stream line by line, handling code blocks properly.
+    Process markdown from a stream line by line using the unified streaming renderer.
 
-    This function reads the input stream and processes it in a way that handles
-    multi-line constructs like code blocks correctly.
+    This function reads the input stream line by line and uses the streaming
+    renderer to provide consistent output with minimal flickering.
     """
-    buffer = []
-    in_code_block = False
-    code_fence_pattern = re.compile(r'^```')
+    # Get terminal width
+    if width is None:
+        width = shutil.get_terminal_size().columns
 
-    for line in input_stream:
-        buffer.append(line)
+    # Create console with proper width
+    console = Console(width=width, force_terminal=True)
 
-        # Check for code fence
-        if code_fence_pattern.match(line.strip()):
-            in_code_block = not in_code_block
+    # Create streaming renderer
+    renderer = StreamingRenderer(console)
 
-        # If we're not in a code block and hit a blank line, process the buffer
-        if not in_code_block and line.strip() == '':
-            if buffer:
-                content = ''.join(buffer)
-                if content.strip():  # Only process non-empty content
-                    convert(content, width)
-                buffer = []
+    try:
+        # Read line by line and add to renderer
+        for line in input_stream:
+            renderer.add_text(line)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # Finalize the rendering
+        renderer.finalize()
 
-    # Process any remaining content
-    if buffer:
-        content = ''.join(buffer)
-        if content.strip():
-            convert(content, width)
+
+def process_character_stream(input_stream: TextIO, width: Optional[int] = None) -> None:
+    """
+    Process markdown from a stream character by character with backtracking support.
+
+    This function is designed for LLM streaming where text arrives in small chunks
+    and markdown syntax may be incomplete until more text arrives.
+    """
+    # Get terminal width
+    if width is None:
+        width = shutil.get_terminal_size().columns
+
+    # Create console with proper width
+    console = Console(width=width, force_terminal=True)
+
+    # Create streaming renderer
+    renderer = StreamingRenderer(console)
+
+    try:
+        # Read character by character
+        while True:
+            char = input_stream.read(1)
+            if not char:  # EOF
+                break
+
+            renderer.add_text(char)
+
+            # Small delay to simulate streaming (can be removed in production)
+            # time.sleep(0.01)
+
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # Finalize the rendering
+        renderer.finalize()
 
 
 @click.command()
 @click.argument("input_file", type=click.File("r"), required=False)
 @click.option("--width", "-w", type=int, help="Override terminal width")
+@click.option("--stream", "-s", is_flag=True, help="Enable character-by-character streaming mode with backtracking")
 @click.version_option(version=__version__)
-def main(input_file: Optional[TextIO], width: Optional[int]) -> None:
+def main(input_file: Optional[TextIO], width: Optional[int], stream: bool) -> None:
     """
     Parse Markdown and turn it into nicely-formatted text for terminal display.
 
@@ -282,14 +437,22 @@ def main(input_file: Optional[TextIO], width: Optional[int]) -> None:
     - Syntax highlighting for code blocks
     - Proper word wrapping based on terminal width
     - Support for all standard markdown elements
-    - Streaming input processing
+    - Unified streaming renderer for consistent output
+    - Character-based streaming with backtracking (--stream mode)
+
+    The --stream mode is designed for LLM output where text arrives in small
+    chunks and markdown syntax may be incomplete until more text arrives.
+    All modes now use the same renderer for consistent beautiful output.
     """
     try:
         # Read the input
         if input_file is None:
-            # For stdin, check if it's a real terminal or test input
-            if hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
-                # Real terminal - use streaming processing
+            # For stdin, choose processing mode
+            if stream:
+                # Character-by-character streaming mode
+                process_character_stream(sys.stdin, width)
+            elif hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
+                # Real terminal - use line-based streaming processing
                 process_stream(sys.stdin, width)
             else:
                 # Test input or pipe - read all at once
@@ -297,9 +460,14 @@ def main(input_file: Optional[TextIO], width: Optional[int]) -> None:
                 if content.strip():
                     convert(content, width)
         else:
-            # For files, we can read the entire content at once
-            content = input_file.read()
-            convert(content, width)
+            # For files, choose processing mode
+            if stream:
+                # Character-by-character streaming mode
+                process_character_stream(input_file, width)
+            else:
+                # Read the entire content at once
+                content = input_file.read()
+                convert(content, width)
 
     except KeyboardInterrupt:
         # Handle Ctrl+C gracefully

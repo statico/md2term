@@ -35,7 +35,13 @@ md2term/
 # Setup
 uv sync --all-extras
 
-# Run the tool
+# Run the tool (DO NOT use py_compile - just run md2term directly)
+md2term [file]                    # Direct execution (preferred)
+echo "text" | md2term             # Pipe input
+md2term --help                    # Show help
+md2term --stream                  # Character streaming mode
+
+# Alternative: run via uv (if not installed globally)
 uv run md2term [file]
 echo "text" | uv run md2term
 uv run md2term --help
@@ -66,6 +72,12 @@ uv build
 3. **Run the full test suite** before committing
 4. **Update version** in both `md2term.py` and `pyproject.toml`
 5. **Update CHANGELOG.md** for notable changes
+
+## Important Notes
+
+- **DO NOT run `py_compile`** - it's not needed and not part of our workflow
+- **Use `md2term` directly** for running the tool (preferred method)
+- **Use `uv run md2term`** only if not installed globally
 
 ## CLI Interface Rules
 

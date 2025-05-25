@@ -24,6 +24,12 @@ A beautiful markdown-to-terminal converter that renders markdown with rich forma
 Install the required dependencies:
 
 ```bash
+uv add click rich mistune
+```
+
+Or if you prefer pip:
+
+```bash
 pip install -r requirements.txt
 ```
 
@@ -33,26 +39,26 @@ pip install -r requirements.txt
 
 ```bash
 # Convert a markdown file
-python md2term.py README.md
+uv run python md2term.py README.md
 
 # Read from stdin
-cat README.md | python md2term.py
+cat README.md | uv run python md2term.py
 
 # Pipe from other commands
-curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2term.py
+curl -s https://raw.githubusercontent.com/user/repo/main/README.md | uv run python md2term.py
 ```
 
 ### Options
 
 ```bash
 # Override terminal width
-python md2term.py --width 100 README.md
+uv run python md2term.py --width 100 README.md
 
 # Show version
-python md2term.py --version
+uv run python md2term.py --version
 
 # Show help
-python md2term.py --help
+uv run python md2term.py --help
 ```
 
 ## Design Decisions

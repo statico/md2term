@@ -207,7 +207,7 @@ class TerminalRenderer:
                 text.append_text(link_text)
                 text.append(f" ({url})", style="dim blue")
             elif token['type'] == 'image':
-                alt_text = token['attrs']['alt']
+                alt_text = self._render_inline_tokens(token['children']).plain
                 url = token['attrs']['url']
                 text.append(f"[IMAGE: {alt_text}]", style="bold magenta")
                 text.append(f" ({url})", style="dim magenta")

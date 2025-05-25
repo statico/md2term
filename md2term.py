@@ -7,6 +7,7 @@ import os
 import shutil
 import re
 import time
+import io
 from typing import Optional, TextIO, List, Dict, Any
 from io import StringIO
 
@@ -233,16 +234,16 @@ class StreamingRenderer:
         self.char_count += len(text)
         current_time = time.time()
 
-        # Smart update conditions:
-        # 1. Significant content added (50+ chars)
-        # 2. Newline received (potential complete element)
-        # 3. Time-based update (every 0.1 seconds minimum)
-        # 4. Buffer ends with complete markdown elements
+        # Balanced update conditions for responsive streaming:
+        # 1. Moderate content added (80+ chars) AND short time passed
+        # 2. Double newline (clear paragraph break)
+        # 3. Time-based update (every 0.1 seconds) AND some content
+        # 4. Buffer ends with complete markdown elements AND short time passed
         should_update = (
-            self.char_count >= 50 or
-            text.endswith('\n') or
-            (current_time - self.last_update_time) >= 0.1 or
-            self._looks_complete()
+            (self.char_count >= 80 and (current_time - self.last_update_time) >= 0.05) or
+            text.endswith('\n\n') or
+            (self.char_count >= 20 and (current_time - self.last_update_time) >= 0.1) or
+            (self._looks_complete() and (current_time - self.last_update_time) >= 0.08)
         )
 
         if should_update:
@@ -476,10 +477,21 @@ def process_smart_stream(input_stream: TextIO, width: Optional[int] = None) -> N
     renderer = StreamingRenderer(console)
 
     try:
-        # Try to read in small chunks first, fall back to character-by-character
+        # Try to use select for optimization, but fall back gracefully
         import select
+        use_select = False
 
-        if hasattr(select, 'select') and hasattr(input_stream, 'fileno'):
+        try:
+            # Check if we can use select (requires real file descriptor)
+            if hasattr(select, 'select') and hasattr(input_stream, 'fileno'):
+                # Test if fileno() actually works
+                input_stream.fileno()
+                use_select = True
+        except (AttributeError, OSError, io.UnsupportedOperation):
+            # fileno() not available or not supported (e.g., in tests)
+            use_select = False
+
+        if use_select:
             # Use select to optimize reading
             while True:
                 # Check if data is available
@@ -507,6 +519,16 @@ def process_smart_stream(input_stream: TextIO, width: Optional[int] = None) -> N
 
     except KeyboardInterrupt:
         pass
+    except Exception:
+        # If anything goes wrong, fall back to simple character reading
+        try:
+            while True:
+                char = input_stream.read(1)
+                if not char:  # EOF
+                    break
+                renderer.add_text(char)
+        except KeyboardInterrupt:
+            pass
     finally:
         # Finalize the rendering
         renderer.finalize()

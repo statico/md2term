@@ -255,8 +255,8 @@ The next paragraph shows how text wraps naturally based on the terminal width, w
         assert result == snapshot
 
     def test_complete_document(self, snapshot):
-        """Test the complete test.md document."""
-        with open("test.md", "r") as f:
+        """Test the complete example.md document."""
+        with open("example.md", "r") as f:
             markdown = f.read()
 
         output = io.StringIO()

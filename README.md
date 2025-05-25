@@ -4,6 +4,9 @@
 
 A beautiful markdown-to-terminal converter that renders markdown with rich formatting, syntax highlighting, and proper terminal layout.
 
+> [!NOTE]
+> This software was created almost entirely by AI with [Cursor](https://www.cursor.com/) and [Claude 4 Sonnet](https://www.anthropic.com/).
+
 ## Features
 
 - **256-color support** with different shades for headers (H1-H6)
@@ -45,7 +48,7 @@ md2term --version
 
 ## Usage
 
-### Basic Usage
+### Command Line
 
 ```bash
 # Convert a markdown file
@@ -56,11 +59,7 @@ cat README.md | md2term
 
 # Pipe from other commands
 curl -s https://raw.githubusercontent.com/user/repo/main/README.md | md2term
-```
 
-### Options
-
-```bash
 # Override terminal width
 md2term --width 100 README.md
 
@@ -70,6 +69,44 @@ md2term --version
 # Show help
 md2term --help
 ```
+
+### Python Library
+
+You can also use md2term as a Python library for integrating markdown rendering into your applications:
+
+````python
+from rich.console import Console
+from md2term import convert, StreamingRenderer
+
+# Simple conversion
+markdown_text = "# Hello\n\nThis is **bold** text."
+convert(markdown_text)
+
+# Streaming usage (great for LLM applications)
+console = Console(force_terminal=True)
+renderer = StreamingRenderer(console)
+
+try:
+    # Add content incrementally
+    renderer.add_text("# Streaming Example\n\n")
+    renderer.add_text("This content appears **immediately** as it's added.\n")
+    renderer.add_text("\n```python\nprint('Hello, World!')\n```\n")
+finally:
+    # Always finalize to ensure complete rendering
+    renderer.finalize()
+````
+
+The streaming functionality is particularly useful for:
+
+- LLM/AI applications that generate content in real-time
+- Processing large files with immediate visual feedback
+- Building interactive CLI tools with progressive output
+
+See `example_streaming.py` for more detailed examples and patterns.
+
+## Examples
+
+For a comprehensive example of markdown features, see `example.md` in this repository.
 
 ## Design Decisions
 
@@ -117,60 +154,6 @@ uv sync
 uv run md2term README.md
 ```
 
-## Dependencies
-
-- **click**: Command-line interface framework
-- **rich**: Terminal formatting and rendering library
-- **mistune**: Fast markdown parser
-
-## Examples
-
-### Sample Markdown
-
-````markdown
-# Main Title
-
-This is a paragraph with **bold text** and _italic text_.
-
-## Subsection
-
-Here's some `inline code` and a [link](https://example.com).
-
-### Code Block
-
-```python
-def hello_world():
-    print("Hello, World!")
-```
-````
-
-> This is a blockquote with some important information.
-
-- Unordered list item 1
-- Unordered list item 2
-
-1. Ordered list item 1
-2. Ordered list item 2
-
----
-
-That's a horizontal rule above this text.
-
-````
-
-### Terminal Output
-
-The above markdown will be rendered with:
-
-- Bright cyan title with decorative rules
-- Blue subsection header with underline
-- Magenta code block header
-- Syntax-highlighted Python code in a panel
-- Blue italic blockquote in a panel
-- Yellow bullet points for unordered list
-- Cyan numbers for ordered list
-- Horizontal rule separator
-
 ## Publishing
 
 To publish a new version to PyPI:
@@ -182,11 +165,7 @@ uv build
 
 # Publish to PyPI (requires PyPI credentials)
 uv publish
-````
-
-## Caveat
-
-This software created almost entirely with [Cursor](https://www.cursor.com/) and [Claude 4 Sonnet](https://www.anthropic.com/).
+```
 
 ## License
 

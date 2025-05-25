@@ -35,8 +35,8 @@ class TerminalRenderer:
     def render(self, tokens: List[Dict[str, Any]]) -> None:
         """Render a list of markdown tokens to the terminal."""
         for i, token in enumerate(tokens):
-            # Add spacing between elements (but not before the first one)
-            if i > 0 and token['type'] != 'blank_line':
+            # Only add spacing between non-blank-line elements
+            if i > 0 and token['type'] != 'blank_line' and tokens[i-1]['type'] != 'blank_line':
                 self.console.print()
             self._render_token(token)
 
@@ -169,8 +169,6 @@ class TerminalRenderer:
 
             # Print with proper indentation
             self.console.print(f"[{marker_style}]{marker}[/] {content}")
-
-        self.console.print()
 
     def _render_thematic_break(self) -> None:
         """Render a horizontal rule."""

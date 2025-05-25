@@ -9,8 +9,9 @@ import re
 import time
 from typing import Optional, TextIO, List, Dict, Any
 from io import StringIO
-import click
+
 import mistune
+import rich_click as click
 from rich.console import Console
 from rich.text import Text
 from rich.syntax import Syntax
@@ -19,6 +20,10 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.columns import Columns
 from rich import box
+
+# Configure rich-click for better readability
+click.rich_click.USE_RICH_MARKUP = True
+click.rich_click.STYLE_HELPTEXT = ""  # Remove dim styling from help text
 
 
 __version__ = "0.1.0"
@@ -511,13 +516,21 @@ def main(input_file: Optional[TextIO], width: Optional[int]) -> None:
 
     If no INPUT_FILE is provided, reads from stdin.
 
+    \b
     Features:
-    - 256-color support with different shades for headers
-    - Syntax highlighting for code blocks
-    - Proper word wrapping based on terminal width
-    - Support for all standard markdown elements
-    - Streaming renderer with backtracking for LLM output
-    - Character-by-character processing with minimal flickering
+    • 256-color support with different shades for headers
+    • Syntax highlighting for code blocks
+    • Proper word wrapping based on terminal width
+    • Support for all standard markdown elements
+    • Streaming renderer with backtracking for LLM output
+    • Character-by-character processing with minimal flickering
+
+    \b
+    Examples:
+    md2term README.md                    # Render a markdown file
+    echo "# Hello" | md2term             # Render from stdin
+    cat file.md | pv -qL 20 | md2term    # Simulate streaming input
+    md2term --width 60 README.md         # Set custom width
 
     The renderer automatically handles both complete files and streaming input,
     with intelligent backtracking when markdown syntax is incomplete.

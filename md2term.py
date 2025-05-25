@@ -106,7 +106,7 @@ class TerminalRenderer:
 
         try:
             # Use Rich's syntax highlighting
-            syntax = Syntax(code, lang, theme="monokai", line_numbers=True,
+            syntax = Syntax(code, lang, theme="monokai", line_numbers=False,
                           background_color="default")
             panel = Panel(syntax, border_style="dim", padding=(0, 1))
             self.console.print(panel)
@@ -130,10 +130,13 @@ class TerminalRenderer:
         self.console = old_console
         content = buffer.getvalue().rstrip()
 
-        # Create a panel with quote styling
-        panel = Panel(content, border_style="dim blue", style="italic dim blue",
-                     padding=(0, 1), title="Quote", title_align="left")
-        self.console.print(panel)
+        # Create GitHub-style blockquote with left border only
+        lines = content.split('\n')
+        for line in lines:
+            if line.strip():  # Only add border to non-empty lines
+                self.console.print(f"[dim blue]│[/] [italic dim blue]{line}[/]")
+            else:
+                self.console.print(f"[dim blue]│[/]")
 
     def _render_list(self, token: Dict[str, Any]) -> None:
         """Render ordered or unordered lists."""

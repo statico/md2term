@@ -1,0 +1,74 @@
+[project]
+name = "md2term"
+version = "0.1.0"
+description = "Parse Markdown and turn it into nicely-formatted text for terminal display"
+readme = "README.md"
+authors = [
+    { name = "Ian Langworth ☠", email = "ian@langworth.com" }
+]
+license = { text = "Apache-2.0" }
+requires-python = ">=3.8"
+dependencies = [
+    "rich>=13.0.0",
+    "markdown>=3.4.0",
+    "click>=8.0.0",
+]
+keywords = ["markdown", "terminal", "cli", "formatting"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Text Processing :: Markup",
+    "Topic :: Utilities",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+dev = [
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/statico/md2term"
+Repository = "https://github.com/statico/md2term"
+Issues = "https://github.com/statico/md2term/issues"
+Changelog = "https://github.com/statico/md2term/releases"
+
+[project.scripts]
+md2term = "md2term:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

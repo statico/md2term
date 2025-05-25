@@ -21,16 +21,24 @@ A beautiful markdown-to-terminal converter that renders markdown with rich forma
 
 ## Installation
 
-Install the required dependencies:
+Install md2term using `uv`:
 
 ```bash
-uv add click rich mistune
+uv tool install md2term
 ```
 
-Or if you prefer pip:
+Or with `pip` or `pipx`:
 
 ```bash
-pip install -r requirements.txt
+pip install md2term
+# or
+pipx install md2term
+```
+
+Verify the installation:
+
+```bash
+md2term --version
 ```
 
 ## Usage
@@ -39,26 +47,26 @@ pip install -r requirements.txt
 
 ```bash
 # Convert a markdown file
-uv run python md2term.py README.md
+md2term README.md
 
 # Read from stdin
-cat README.md | uv run python md2term.py
+cat README.md | md2term
 
 # Pipe from other commands
-curl -s https://raw.githubusercontent.com/user/repo/main/README.md | uv run python md2term.py
+curl -s https://raw.githubusercontent.com/user/repo/main/README.md | md2term
 ```
 
 ### Options
 
 ```bash
 # Override terminal width
-uv run python md2term.py --width 100 README.md
+md2term --width 100 README.md
 
 # Show version
-uv run python md2term.py --version
+md2term --version
 
 # Show help
-uv run python md2term.py --help
+md2term --help
 ```
 
 ## Design Decisions
@@ -90,6 +98,23 @@ This approach is efficient and works well for typical markdown usage patterns.
 
 The program automatically detects terminal width and wraps text accordingly. You can override this with the `--width` option for testing or specific formatting needs.
 
+## Development
+
+To install for development:
+
+```bash
+# Clone the repository
+git clone https://github.com/statico/md2term
+cd md2term
+
+# Install in development mode
+uv tool install --editable .
+
+# Or install dependencies for local development
+uv sync
+uv run md2term README.md
+```
+
 ## Dependencies
 
 - **click**: Command-line interface framework
@@ -100,7 +125,7 @@ The program automatically detects terminal width and wraps text accordingly. You
 
 ### Sample Markdown
 
-```markdown
+````markdown
 # Main Title
 
 This is a paragraph with **bold text** and _italic text_.
@@ -111,10 +136,11 @@ Here's some `inline code` and a [link](https://example.com).
 
 ### Code Block
 
-\`\`\`python
+```python
 def hello_world():
-print("Hello, World!")
-\`\`\`
+    print("Hello, World!")
+```
+````
 
 > This is a blockquote with some important information.
 
@@ -127,7 +153,8 @@ print("Hello, World!")
 ---
 
 That's a horizontal rule above this text.
-```
+
+````
 
 ### Terminal Output
 
@@ -142,6 +169,19 @@ The above markdown will be rendered with:
 - Cyan numbers for ordered list
 - Horizontal rule separator
 
+## Publishing
+
+To publish a new version to PyPI:
+
+```bash
+# Update version in pyproject.toml
+# Build the package
+uv build
+
+# Publish to PyPI (requires PyPI credentials)
+uv publish
+````
+
 ## Caveat
 
 This software created almost entirely with [Cursor](https://www.cursor.com/) and [Claude 4 Sonnet](https://www.anthropic.com/).
@@ -149,3 +189,7 @@ This software created almost entirely with [Cursor](https://www.cursor.com/) and
 ## License
 
 This project is open source. Feel free to use and modify as needed.
+
+```
+
+```

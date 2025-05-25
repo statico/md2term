@@ -46,6 +46,11 @@ uv run md2term [file]
 echo "text" | uv run md2term
 uv run md2term --help
 
+# Basic tests for functionality and to simulate streaming
+uv run md2term test.md
+cat test.md | uv run md2term
+cat test.md | pv -qL 300 | uv run md2term
+
 # Testing & Quality
 uv run pytest -v
 uv run ruff check .

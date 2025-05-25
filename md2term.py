@@ -212,13 +212,14 @@ class TerminalRenderer:
 
 
 class StreamingRenderer:
-    """Unified renderer that handles both streaming and non-streaming with minimal flickering."""
+    """Simple streaming renderer that minimizes flickering with reduced update frequency."""
 
     def __init__(self, console: Console):
         self.console = console
         self.buffer = ""
-        self.last_output_lines = 0
+        self.current_output_lines = 0
         self.last_was_incomplete = False
+        self.char_count = 0
 
         # Patterns for detecting incomplete markdown syntax
         self.incomplete_patterns = [
@@ -233,58 +234,54 @@ class StreamingRenderer:
         ]
 
     def add_text(self, text: str) -> None:
-        """Add new text to the buffer and re-render if needed."""
+        """Add new text to the buffer and render with reduced frequency."""
         self.buffer += text
+        self.char_count += len(text)
 
-        # If we're adding a large chunk of text, it's likely bulk input
-        # In that case, only render at the end to avoid excessive re-rendering
-        if len(text) > 50:
-            # Large chunk - likely bulk input, defer rendering
-            return
+        # Only update every 20 characters or on newlines to reduce flickering
+        should_update = (
+            self.char_count >= 20 or
+            text.endswith('\n') or
+            len(text) > 50  # Large chunks (bulk input)
+        )
 
-        self._render_if_needed()
+        if should_update:
+            self._render_current_state()
+            self.char_count = 0
 
     def render_complete(self, text: str) -> None:
         """Render complete text (for non-streaming mode)."""
         self.buffer = text
-        self._render_markdown()
+        self._render_final()
 
-    def _render_if_needed(self) -> None:
-        """Only re-render when transitioning between incomplete and complete states."""
-        is_incomplete = self._has_incomplete_syntax()
+    def _render_current_state(self) -> None:
+        """Render the current buffer state."""
+        is_incomplete = self._has_incomplete_syntax_in_text(self.buffer)
 
-        # Only re-render if:
-        # 1. We transition from incomplete to complete (backtracking)
-        # 2. We have complete syntax and this is the first render
-        # 3. We end with newline (paragraph completion)
-        # 4. We have accumulated enough new content (reduce micro-updates)
+        # Only re-render if state changed or we have significant new content
+        if self.last_was_incomplete != is_incomplete or self.char_count >= 20:
+            self._clear_output()
 
-        lines_in_buffer = self.buffer.count('\n')
-        has_significant_content = len(self.buffer) > 50 or lines_in_buffer > self.last_output_lines
-
-        should_render = (
-            (self.last_was_incomplete and not is_incomplete) or  # Transition to complete
-            (not is_incomplete and self.last_output_lines == 0) or  # First complete render
-            self.buffer.endswith('\n') or  # Paragraph completion
-            has_significant_content  # Accumulated enough content
-        )
-
-        if should_render:
             if is_incomplete:
-                self._render_plain_text()
+                # Show as plain text while incomplete
+                self.console.print(self.buffer, end="")
+                self.current_output_lines = self.buffer.count('\n')
+                if self.buffer and not self.buffer.endswith('\n'):
+                    self.current_output_lines += 1
             else:
-                self._render_markdown()
+                # Render as markdown when complete
+                self._render_markdown_content(self.buffer)
 
-        self.last_was_incomplete = is_incomplete
+            self.last_was_incomplete = is_incomplete
 
-    def _has_incomplete_syntax(self) -> bool:
-        """Check if the buffer contains incomplete markdown syntax."""
+    def _has_incomplete_syntax_in_text(self, text: str) -> bool:
+        """Check if the given text contains incomplete markdown syntax."""
         # Don't treat as incomplete if we end with whitespace or newline
-        if self.buffer.endswith(('\n', ' ', '\t')):
+        if text.endswith(('\n', ' ', '\t')):
             return False
 
         # Get the current line being typed
-        lines = self.buffer.split('\n')
+        lines = text.split('\n')
         current_line = lines[-1] if lines else ""
 
         # Check for incomplete patterns
@@ -293,58 +290,75 @@ class StreamingRenderer:
                 return True
 
         # Special case: check for incomplete code blocks
-        code_block_count = self.buffer.count('```')
+        code_block_count = text.count('```')
         if code_block_count % 2 == 1:  # Odd number means incomplete code block
             return True
 
         return False
 
-    def _render_plain_text(self) -> None:
-        """Render the buffer as plain text."""
-        self._clear_previous_output()
-        self.console.print(self.buffer, end="")
-        self.last_output_lines = self.buffer.count('\n')
-        if self.buffer and not self.buffer.endswith('\n'):
-            self.last_output_lines += 1
+    def _render_markdown_content(self, content: str) -> None:
+        """Render markdown content and track the number of lines."""
+        if not content.strip():
+            return
 
-    def _render_markdown(self) -> None:
-        """Render the buffer as parsed markdown using TerminalRenderer."""
         try:
-            self._clear_previous_output()
-
-            # Parse and render the markdown using the same TerminalRenderer
+            # Parse and render the markdown
             markdown = mistune.create_markdown(renderer=None)
-            tokens = markdown(self.buffer)
+            tokens = markdown(content)
 
-            renderer = TerminalRenderer(self.console)
-            renderer.render(tokens)
-
-            # Count lines in the output by capturing it
+            # Capture output to count lines
             output_buffer = StringIO()
             temp_console = Console(file=output_buffer, width=self.console.size.width, force_terminal=True)
             temp_renderer = TerminalRenderer(temp_console)
             temp_renderer.render(tokens)
             output = output_buffer.getvalue()
 
-            self.last_output_lines = output.count('\n')
+            # Print the actual output
+            renderer = TerminalRenderer(self.console)
+            renderer.render(tokens)
+
+            # Update line count
+            self.current_output_lines = output.count('\n')
             if output and not output.endswith('\n'):
-                self.last_output_lines += 1
+                self.current_output_lines += 1
 
         except Exception:
             # Fallback to plain text if parsing fails
-            self._render_plain_text()
+            self.console.print(content, end="")
+            self.current_output_lines = content.count('\n')
+            if content and not content.endswith('\n'):
+                self.current_output_lines += 1
 
-    def _clear_previous_output(self) -> None:
-        """Clear the previous output by moving cursor up and clearing lines."""
-        if self.last_output_lines > 0:
-            for _ in range(self.last_output_lines):
+    def _clear_output(self) -> None:
+        """Clear the current output."""
+        if self.current_output_lines > 0:
+            for _ in range(self.current_output_lines):
                 self.console.file.write("\033[1A\033[2K")
             self.console.file.flush()
+            self.current_output_lines = 0
+
+    def _render_final(self) -> None:
+        """Render the final complete content."""
+        # Clear any current output
+        self._clear_output()
+
+        # Render everything as markdown
+        try:
+            markdown = mistune.create_markdown(renderer=None)
+            tokens = markdown(self.buffer)
+            renderer = TerminalRenderer(self.console)
+            renderer.render(tokens)
+        except Exception:
+            # Fallback to plain text
+            self.console.print(self.buffer, end="")
 
     def finalize(self) -> None:
         """Finalize the rendering (called when input is complete)."""
-        # Force a final markdown render
-        self._render_markdown()
+        # Clear current output and render final content
+        self._clear_output()
+        if self.buffer.strip():
+            self._render_markdown_content(self.buffer)
+
         # Ensure we end with a newline if we don't already
         if self.buffer and not self.buffer.endswith('\n'):
             self.console.print()

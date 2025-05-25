@@ -217,152 +217,158 @@ class TerminalRenderer:
 
 
 class StreamingRenderer:
-    """Simple streaming renderer that minimizes flickering with reduced update frequency."""
+    """Improved streaming renderer that minimizes corruption and flickering."""
 
     def __init__(self, console: Console):
         self.console = console
         self.buffer = ""
-        self.current_output_lines = 0
-        self.last_was_incomplete = False
+        self.last_rendered_content = ""
+        self.last_rendered_lines = 0
         self.char_count = 0
-
-        # Patterns for detecting incomplete markdown syntax
-        self.incomplete_patterns = [
-            r'\*[^*\n]*$',         # Incomplete bold/italic (single *)
-            r'\*\*[^*\n]*$',       # Incomplete bold (**)
-            r'_[^_\n]*$',          # Incomplete italic (single _)
-            r'__[^_\n]*$',         # Incomplete italic (__)
-            r'`[^`\n]*$',          # Incomplete inline code
-            r'\[[^\]\n]*$',        # Incomplete link text
-            r'\]\([^)\n]*$',       # Incomplete link URL
-            r'^#{1,6}\s*[^\n]*$',  # Incomplete heading (no newline yet)
-        ]
+        self.last_update_time = time.time()
 
     def add_text(self, text: str) -> None:
-        """Add new text to the buffer and render with reduced frequency."""
+        """Add new text to the buffer and render with smart frequency control."""
         self.buffer += text
         self.char_count += len(text)
+        current_time = time.time()
 
-        # Only update every 20 characters or on newlines to reduce flickering
+        # Smart update conditions:
+        # 1. Significant content added (50+ chars)
+        # 2. Newline received (potential complete element)
+        # 3. Time-based update (every 0.1 seconds minimum)
+        # 4. Buffer ends with complete markdown elements
         should_update = (
-            self.char_count >= 20 or
+            self.char_count >= 50 or
             text.endswith('\n') or
-            len(text) > 50  # Large chunks (bulk input)
+            (current_time - self.last_update_time) >= 0.1 or
+            self._looks_complete()
         )
 
         if should_update:
             self._render_current_state()
             self.char_count = 0
+            self.last_update_time = current_time
 
     def render_complete(self, text: str) -> None:
         """Render complete text (for non-streaming mode)."""
         self.buffer = text
         self._render_final()
 
-    def _render_current_state(self) -> None:
-        """Render the current buffer state."""
-        is_incomplete = self._has_incomplete_syntax_in_text(self.buffer)
-
-        # Only re-render if state changed or we have significant new content
-        if self.last_was_incomplete != is_incomplete or self.char_count >= 20:
-            self._clear_output()
-
-            if is_incomplete:
-                # Show as plain text while incomplete
-                self.console.print(self.buffer, end="")
-                self.current_output_lines = self.buffer.count('\n')
-                if self.buffer and not self.buffer.endswith('\n'):
-                    self.current_output_lines += 1
-            else:
-                # Render as markdown when complete
-                self._render_markdown_content(self.buffer)
-
-            self.last_was_incomplete = is_incomplete
-
-    def _has_incomplete_syntax_in_text(self, text: str) -> bool:
-        """Check if the given text contains incomplete markdown syntax."""
-        # Don't treat as incomplete if we end with whitespace or newline
-        if text.endswith(('\n', ' ', '\t')):
+    def _looks_complete(self) -> bool:
+        """Check if the buffer ends with what looks like complete markdown elements."""
+        if not self.buffer:
             return False
 
-        # Get the current line being typed
-        lines = text.split('\n')
-        current_line = lines[-1] if lines else ""
-
-        # Check for incomplete patterns
-        for pattern in self.incomplete_patterns:
-            if re.search(pattern, current_line):
-                return True
-
-        # Special case: check for incomplete code blocks
-        code_block_count = text.count('```')
-        if code_block_count % 2 == 1:  # Odd number means incomplete code block
+        # Consider complete if ends with:
+        # - Double newline (paragraph break)
+        # - Single newline after certain patterns
+        if self.buffer.endswith('\n\n'):
             return True
+
+        if self.buffer.endswith('\n'):
+            lines = self.buffer.rstrip().split('\n')
+            if lines:
+                last_line = lines[-1].strip()
+                # Complete if last line looks like a complete element
+                if (last_line.startswith('#') or  # Heading
+                    last_line.startswith('- ') or  # List item
+                    last_line.startswith('> ') or  # Blockquote
+                    last_line == '---' or  # Horizontal rule
+                    not last_line):  # Empty line
+                    return True
 
         return False
 
-    def _render_markdown_content(self, content: str) -> None:
-        """Render markdown content and track the number of lines."""
-        if not content.strip():
+    def _render_current_state(self) -> None:
+        """Render the current buffer state with minimal re-rendering."""
+        # Only re-render if content has actually changed
+        if self.buffer == self.last_rendered_content:
             return
 
+        # Clear previous output
+        self._clear_previous_output()
+
+        # Render new content
         try:
-            # Parse and render the markdown
-            markdown = mistune.create_markdown(renderer=None)
-            tokens = markdown(content)
-
-            # Capture output to count lines
-            output_buffer = StringIO()
-            temp_console = Console(file=output_buffer, width=self.console.size.width, force_terminal=True)
-            temp_renderer = TerminalRenderer(temp_console)
-            temp_renderer.render(tokens)
-            output = output_buffer.getvalue()
-
-            # Print the actual output
-            renderer = TerminalRenderer(self.console)
-            renderer.render(tokens)
-
-            # Update line count
-            self.current_output_lines = output.count('\n')
-            if output and not output.endswith('\n'):
-                self.current_output_lines += 1
-
+            if self.buffer.strip():
+                self._render_and_count(self.buffer)
+            self.last_rendered_content = self.buffer
         except Exception:
-            # Fallback to plain text if parsing fails
-            self.console.print(content, end="")
-            self.current_output_lines = content.count('\n')
-            if content and not content.endswith('\n'):
-                self.current_output_lines += 1
+            # Fallback to plain text if markdown parsing fails
+            self.console.print(self.buffer, end="")
+            self.last_rendered_lines = self.buffer.count('\n')
+            if self.buffer and not self.buffer.endswith('\n'):
+                self.last_rendered_lines += 1
 
-    def _clear_output(self) -> None:
-        """Clear the current output."""
-        if self.current_output_lines > 0:
-            for _ in range(self.current_output_lines):
+    def _render_and_count(self, content: str) -> None:
+        """Render content and accurately count the output lines."""
+        # Use a temporary buffer to capture and count the actual output
+        temp_buffer = StringIO()
+        temp_console = Console(
+            file=temp_buffer,
+            width=self.console.size.width,
+            force_terminal=False,  # Don't force terminal for counting
+            legacy_windows=False
+        )
+
+        # Parse and render to temp console
+        markdown = mistune.create_markdown(renderer=None)
+        tokens = markdown(content)
+        temp_renderer = TerminalRenderer(temp_console)
+        temp_renderer.render(tokens)
+
+        # Get the actual output
+        output = temp_buffer.getvalue()
+
+        # Now render to the real console
+        real_renderer = TerminalRenderer(self.console)
+        real_renderer.render(tokens)
+
+        # Count lines accurately from the actual output
+        self.last_rendered_lines = len(output.split('\n')) - 1
+        if output and not output.endswith('\n'):
+            self.last_rendered_lines += 1
+
+    def _clear_previous_output(self) -> None:
+        """Clear the previous output using accurate line count."""
+        if self.last_rendered_lines > 0:
+            # Move cursor up and clear each line
+            for _ in range(self.last_rendered_lines):
                 self.console.file.write("\033[1A\033[2K")
             self.console.file.flush()
-            self.current_output_lines = 0
+            self.last_rendered_lines = 0
 
     def _render_final(self) -> None:
         """Render the final complete content."""
         # Clear any current output
-        self._clear_output()
+        self._clear_previous_output()
 
         # Render everything as markdown
-        try:
-            markdown = mistune.create_markdown(renderer=None)
-            tokens = markdown(self.buffer)
-            renderer = TerminalRenderer(self.console)
-            renderer.render(tokens)
-        except Exception:
-            # Fallback to plain text
-            self.console.print(self.buffer, end="")
+        if self.buffer.strip():
+            try:
+                markdown = mistune.create_markdown(renderer=None)
+                tokens = markdown(self.buffer)
+                renderer = TerminalRenderer(self.console)
+                renderer.render(tokens)
+            except Exception:
+                # Fallback to plain text
+                self.console.print(self.buffer, end="")
 
     def finalize(self) -> None:
         """Finalize the rendering (called when input is complete)."""
         # Clear current output and render final content
-        self._clear_output()
+        self._clear_previous_output()
+
         if self.buffer.strip():
-            self._render_markdown_content(self.buffer)
+            try:
+                markdown = mistune.create_markdown(renderer=None)
+                tokens = markdown(self.buffer)
+                renderer = TerminalRenderer(self.console)
+                renderer.render(tokens)
+            except Exception:
+                # Fallback to plain text
+                self.console.print(self.buffer, end="")
 
         # Ensure we end with a newline if we don't already
         if self.buffer and not self.buffer.endswith('\n'):

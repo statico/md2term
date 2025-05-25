@@ -18,7 +18,7 @@ alwaysApply: false
    - `uv run mypy md2term.py`
 3. **Test CLI manually**:
    - `echo "# Test" | uv run md2term`
-   - `cat test.md | pv -qL 20 | uv run md2term`
+   - `cat example.md | pv -qL 20 | uv run md2term`
    - `uv run md2term README.md`
    - `uv run md2term --help`
 4. **Update CHANGELOG.md** with new features/fixes

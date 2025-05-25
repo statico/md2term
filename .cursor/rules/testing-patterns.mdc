@@ -162,7 +162,7 @@ Always use `width=80` for consistent snapshots across environments.
 Use `force_terminal=True` to ensure ANSI codes are generated.
 
 ### 3. Test Real Features
-Each test should focus on a specific markdown feature from `test.md`.
+Each test should focus on a specific markdown feature from `example.md`.
 
 ### 4. Descriptive Test Names
 Use clear, descriptive test names that explain what feature is being tested.

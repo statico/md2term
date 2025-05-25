@@ -154,6 +154,47 @@ uv sync
 uv run md2term README.md
 ```
 
+### Running Tests
+
+The project uses pytest with snapshot testing via syrupy to ensure consistent output formatting:
+
+```bash
+# Install test dependencies
+uv sync --group test
+
+# Run all tests
+uv run pytest
+
+# Run tests with coverage
+uv run pytest --cov=md2term
+
+# Run specific test file
+uv run pytest tests/test_md2term.py
+
+# Run specific test
+uv run pytest tests/test_md2term.py::TestMarkdownFeatures::test_headings_all_levels
+```
+
+### Snapshot Testing
+
+The tests use snapshot testing to verify that markdown rendering produces consistent terminal output. Snapshots capture the exact ANSI escape sequences and formatting that would appear in the terminal.
+
+```bash
+# Update snapshots when output changes (after verifying changes are correct)
+uv run pytest --snapshot-update
+
+# Review snapshot differences
+uv run pytest --snapshot-details
+```
+
+**Important**: When modifying rendering logic, always:
+
+1. Run tests to see what changed
+2. Manually verify the output looks correct with `uv run md2term example.md`
+3. Update snapshots only if the changes are intentional and correct
+
+The snapshot file is located at `tests/__snapshots__/test_md2term.ambr` and contains the expected terminal output for various markdown inputs.
+
 ## Publishing
 
 To publish a new version to PyPI:

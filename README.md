@@ -1,97 +1,141 @@
 # md2term
 
-[![PyPI](https://img.shields.io/pypi/v/md2term.svg)](https://pypi.org/project/md2term/)
-[![Python Version](https://img.shields.io/pypi/pyversions/md2term.svg)](https://pypi.org/project/md2term/)
-[![License](https://img.shields.io/pypi/l/md2term.svg)](https://github.com/statico/md2term/blob/main/LICENSE)
+A beautiful markdown-to-terminal converter that renders markdown with rich formatting, syntax highlighting, and proper terminal layout.
 
-Parse Markdown and turn it into nicely-formatted text that can be read in the terminal.
+## Features
+
+- **256-color support** with different shades for headers (H1-H6)
+- **Syntax highlighting** for code blocks using Pygments
+- **Proper word wrapping** based on terminal width (like man pages)
+- **Streaming input processing** for handling large files and stdin
+- **Smart code block handling** - detects triple backticks and processes blocks correctly
+- **Rich formatting** for all markdown elements:
+  - Headers with different colors and styles
+  - Bold and italic text
+  - Code spans with highlighting
+  - Blockquotes with panels
+  - Ordered and unordered lists
+  - Links with URLs
+  - Images with alt text
+  - Horizontal rules
 
 ## Installation
 
-Install this tool using `pip` or `uv`:
+Install the required dependencies:
 
 ```bash
-pip install md2term
-```
-
-Or with `uv`:
-
-```bash
-uv add md2term
+pip install -r requirements.txt
 ```
 
 ## Usage
 
-### Command Line
+### Basic Usage
 
 ```bash
-# Read from a file
-md2term README.md
+# Convert a markdown file
+python md2term.py README.md
 
 # Read from stdin
-cat README.md | md2term
+cat README.md | python md2term.py
 
-# Read from a URL (if supported)
-md2term https://example.com/document.md
+# Pipe from other commands
+curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2term.py
 ```
 
-### Python API
-
-```python
-import md2term
-
-# Convert markdown string to terminal-formatted text
-markdown_text = "# Hello\n\nThis is **bold** text."
-formatted = md2term.convert(markdown_text)
-print(formatted)
-
-# Stream conversion (useful for large documents)
-for chunk in md2term.stream_convert(markdown_text):
-    print(chunk, end='')
-```
-
-## Features
-
-- Convert Markdown to beautifully formatted terminal output
-- Support for common Markdown elements:
-  - Headers
-  - Bold and italic text
-  - Code blocks and inline code
-  - Lists (ordered and unordered)
-  - Links
-  - Blockquotes
-  - Tables
-- Streaming output for large documents
-- Configurable color schemes
-- Works with pipes and redirects
-
-## Development
-
-To set up for development:
+### Options
 
 ```bash
-git clone https://github.com/statico/md2term.git
-cd md2term
-uv sync --dev
+# Override terminal width
+python md2term.py --width 100 README.md
+
+# Show version
+python md2term.py --version
+
+# Show help
+python md2term.py --help
 ```
 
-Run tests:
+## Design Decisions
 
-```bash
-uv run pytest
+### Code Block Handling
+
+The program uses a smart approach to handle multi-line code blocks:
+
+1. **Streaming Processing**: For stdin input, the program processes content in chunks, buffering until it encounters blank lines (when not in a code block)
+2. **Code Fence Detection**: Detects triple backticks (`\`\`\``) to track when we're inside code blocks
+3. **No Backtracking**: Instead of clearing previous lines, the program assumes that triple backticks always indicate the start/end of code blocks
+
+This approach is efficient and works well for typical markdown usage patterns.
+
+### Color Scheme
+
+- **H1**: Bright cyan with rules above and below, centered
+- **H2**: Bright blue with rule below
+- **H3**: Bright magenta
+- **H4**: Bright yellow
+- **H5**: Bright green
+- **H6**: Bright white
+- **Code spans**: Red text on dark gray background
+- **Links**: Blue underlined text with URL in parentheses
+- **Lists**: Yellow bullets (•) for unordered, cyan numbers for ordered
+- **Blockquotes**: Blue italic text in a panel
+
+### Terminal Width Handling
+
+The program automatically detects terminal width and wraps text accordingly. You can override this with the `--width` option for testing or specific formatting needs.
+
+## Dependencies
+
+- **click**: Command-line interface framework
+- **rich**: Terminal formatting and rendering library
+- **mistune**: Fast markdown parser
+
+## Examples
+
+### Sample Markdown
+
+```markdown
+# Main Title
+
+This is a paragraph with **bold text** and _italic text_.
+
+## Subsection
+
+Here's some `inline code` and a [link](https://example.com).
+
+### Code Block
+
+\`\`\`python
+def hello_world():
+print("Hello, World!")
+\`\`\`
+
+> This is a blockquote with some important information.
+
+- Unordered list item 1
+- Unordered list item 2
+
+1. Ordered list item 1
+2. Ordered list item 2
+
+---
+
+That's a horizontal rule above this text.
 ```
 
-Format code:
+### Terminal Output
 
-```bash
-uv run black .
-uv run ruff check --fix .
-```
+The above markdown will be rendered with:
+
+- Bright cyan title with decorative rules
+- Blue subsection header with underline
+- Magenta code block header
+- Syntax-highlighted Python code in a panel
+- Blue italic blockquote in a panel
+- Yellow bullet points for unordered list
+- Cyan numbers for ordered list
+- Horizontal rule separator
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE) for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+This project is open source. Feel free to use and modify as needed.

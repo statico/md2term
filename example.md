@@ -101,4 +101,51 @@ python md2term.py README.md
 curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2term.py
 ```
 
+# Test Callouts
+
+## GitHub-style callouts
+
+> [!NOTE]
+> This is a note callout.
+
+> [!TIP]
+> This is a tip callout.
+
+> [!WARNING]
+> This is a warning callout.
+
+> [!IMPORTANT]
+> This is an important callout.
+
+> [!CAUTION]
+> This is a caution callout.
+
+## Callouts with custom titles
+
+> [!NOTE] Custom Note Title
+>
+> This is a note with a custom title.
+
+> [!TIP] Pro Tip
+>
+> This is a tip with a custom title.
+
+## Callouts with rich content
+
+> [!WARNING] Complex Warning
+>
+> This callout contains **bold text**, _italic text_, and `inline code`.
+>
+> It can also contain:
+>
+> - Bullet points
+> - Multiple paragraphs
+> - Even [links](https://example.com)
+>
+> ```python
+> # And code blocks!
+> def example():
+>     return "Hello from a callout!"
+> ```
+
 That's all folks!

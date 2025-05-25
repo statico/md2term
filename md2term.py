@@ -128,7 +128,7 @@ class TerminalRenderer:
             self.console.print(panel)
 
     def _render_blockquote(self, token: Dict[str, Any]) -> None:
-        """Render a blockquote with indentation and styling."""
+        """Render a blockquote with indentation and styling, including GitHub-style callouts."""
         # Render children into a string buffer
         old_console = self.console
         buffer = StringIO()
@@ -141,13 +141,141 @@ class TerminalRenderer:
         self.console = old_console
         content = buffer.getvalue().rstrip()
 
-        # Create GitHub-style blockquote with left border only
-        lines = content.split('\n')
-        for line in lines:
-            if line.strip():  # Only add border to non-empty lines
-                self.console.print(f"[dim blue]│[/] [italic dim blue]{line}[/]")
+        # Check if this is a GitHub-style callout
+        callout_info = self._detect_callout(content)
+
+        if callout_info:
+            self._render_callout(content, callout_info)
+        else:
+            # Create GitHub-style blockquote with left border only
+            lines = content.split('\n')
+            for line in lines:
+                if line.strip():  # Only add border to non-empty lines
+                    self.console.print(f"[dim blue]│[/] [italic dim blue]{line}[/]")
+                else:
+                    self.console.print(f"[dim blue]│[/]")
+
+    def _detect_callout(self, content: str) -> Optional[Dict[str, str]]:
+        """Detect GitHub-style callouts in blockquote content."""
+        lines = content.strip().split('\n')
+        if not lines:
+            return None
+
+        first_line = lines[0].strip()
+
+        # Match patterns like "[!NOTE]" or "[!NOTE] Custom Title"
+        callout_pattern = r'^\[!([A-Z]+)\](?:\s+(.+))?$'
+        match = re.match(callout_pattern, first_line)
+
+        if match:
+            callout_type = match.group(1).lower()
+            custom_title = match.group(2)
+
+            # Get the content after the callout declaration
+            content_lines = lines[1:] if len(lines) > 1 else []
+            callout_content = '\n'.join(content_lines).strip()
+
+            return {
+                'type': callout_type,
+                'title': custom_title,
+                'content': callout_content
+            }
+
+        return None
+
+    def _render_callout(self, content: str, callout_info: Dict[str, str]) -> None:
+        """Render a GitHub-style callout with emoji and appropriate styling."""
+        callout_type = callout_info['type']
+        custom_title = callout_info['title']
+        callout_content = callout_info['content']
+
+        # Define callout styles and emojis
+        callout_styles = {
+            'note': {
+                'emoji': '📝',
+                'title': 'Note',
+                'border_style': 'blue',
+                'title_style': 'bold blue',
+                'content_style': 'blue'
+            },
+            'tip': {
+                'emoji': '💡',
+                'title': 'Tip',
+                'border_style': 'green',
+                'title_style': 'bold green',
+                'content_style': 'green'
+            },
+            'warning': {
+                'emoji': '⚠️',
+                'title': 'Warning',
+                'border_style': 'yellow',
+                'title_style': 'bold yellow',
+                'content_style': 'yellow'
+            },
+            'important': {
+                'emoji': '❗',
+                'title': 'Important',
+                'border_style': 'magenta',
+                'title_style': 'bold magenta',
+                'content_style': 'magenta'
+            },
+            'caution': {
+                'emoji': '🚨',
+                'title': 'Caution',
+                'border_style': 'red',
+                'title_style': 'bold red',
+                'content_style': 'red'
+            }
+        }
+
+        # Get style info, default to note if unknown type
+        style = callout_styles.get(callout_type, callout_styles['note'])
+
+        # Use custom title if provided, otherwise use default
+        title = custom_title if custom_title else style['title']
+
+        # Create the title line with emoji and two extra spaces
+        title_line = f"{style['emoji']}  {title}"
+
+        # Render the callout as a panel
+        if callout_content:
+            # Parse and render the content with markdown
+            old_console = self.console
+            content_buffer = StringIO()
+            temp_console = Console(file=content_buffer, width=self.console.size.width - 6)
+            self.console = temp_console
+
+            # Parse the content as markdown
+            import mistune
+            markdown = mistune.create_markdown(renderer=None)
+            try:
+                tokens = markdown(callout_content)
+                temp_renderer = TerminalRenderer(temp_console)
+                temp_renderer.render(tokens)
+            except Exception:
+                # Fallback to plain text if parsing fails
+                temp_console.print(callout_content)
+
+            self.console = old_console
+            rendered_content = content_buffer.getvalue().rstrip()
+
+            # Create panel with title and content properly separated
+            if rendered_content:
+                panel_content = f"[{style['title_style']}]{title_line}[/]\n\n{rendered_content}"
             else:
-                self.console.print(f"[dim blue]│[/]")
+                panel_content = f"[{style['title_style']}]{title_line}[/]"
+        else:
+            # Just the title if no content
+            panel_content = f"[{style['title_style']}]{title_line}[/]"
+
+        # Create and display the panel
+        panel = Panel(
+            panel_content,
+            border_style=style['border_style'],
+            padding=(0, 1),
+            expand=False
+        )
+        self.console.print(panel)
 
     def _render_list(self, token: Dict[str, Any]) -> None:
         """Render ordered or unordered lists."""

@@ -34,7 +34,10 @@ class TerminalRenderer:
 
     def render(self, tokens: List[Dict[str, Any]]) -> None:
         """Render a list of markdown tokens to the terminal."""
-        for token in tokens:
+        for i, token in enumerate(tokens):
+            # Add spacing between elements (but not before the first one)
+            if i > 0 and token['type'] != 'blank_line':
+                self.console.print()
             self._render_token(token)
 
     def _render_token(self, token: Dict[str, Any]) -> None:
@@ -66,43 +69,30 @@ class TerminalRenderer:
         # Different colors and styles for different heading levels
         if level == 1:
             # Bright cyan, bold, with rule above and below
-            self.console.print()
             self.console.print(Rule(style="bright_cyan"))
             self.console.print(text, style="bold bright_cyan", justify="center")
             self.console.print(Rule(style="bright_cyan"))
-            self.console.print()
         elif level == 2:
             # Bright blue, bold, with rule below
-            self.console.print()
             self.console.print(text, style="bold bright_blue")
             self.console.print(Rule(style="blue"))
-            self.console.print()
         elif level == 3:
             # Bright magenta, bold
-            self.console.print()
             self.console.print(text, style="bold bright_magenta")
-            self.console.print()
         elif level == 4:
             # Bright yellow, bold
-            self.console.print()
             self.console.print(text, style="bold bright_yellow")
-            self.console.print()
         elif level == 5:
             # Bright green, bold
-            self.console.print()
             self.console.print(text, style="bold bright_green")
-            self.console.print()
         else:  # level 6
             # Bright white, bold
-            self.console.print()
             self.console.print(text, style="bold bright_white")
-            self.console.print()
 
     def _render_paragraph(self, token: Dict[str, Any]) -> None:
         """Render a paragraph with proper word wrapping."""
         text = self._render_inline_tokens(token['children'])
         self.console.print(text)
-        self.console.print()
 
     def _render_block_text(self, token: Dict[str, Any]) -> None:
         """Render block text (used in list items and other contexts)."""
@@ -125,7 +115,6 @@ class TerminalRenderer:
             panel = Panel(code, border_style="dim", style="dim white on black",
                          padding=(0, 1))
             self.console.print(panel)
-        self.console.print()
 
     def _render_blockquote(self, token: Dict[str, Any]) -> None:
         """Render a blockquote with indentation and styling."""
@@ -145,7 +134,6 @@ class TerminalRenderer:
         panel = Panel(content, border_style="dim blue", style="italic dim blue",
                      padding=(0, 1), title="Quote", title_align="left")
         self.console.print(panel)
-        self.console.print()
 
     def _render_list(self, token: Dict[str, Any]) -> None:
         """Render ordered or unordered lists."""
@@ -179,9 +167,7 @@ class TerminalRenderer:
 
     def _render_thematic_break(self) -> None:
         """Render a horizontal rule."""
-        self.console.print()
         self.console.print(Rule(style="dim"))
-        self.console.print()
 
     def _render_inline_tokens(self, tokens: List[Dict[str, Any]]) -> Text:
         """Render inline tokens (emphasis, strong, code, links, etc.) into Rich Text."""

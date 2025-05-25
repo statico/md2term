@@ -250,10 +250,16 @@ class StreamingRenderer:
         # 1. We transition from incomplete to complete (backtracking)
         # 2. We have complete syntax and this is the first render
         # 3. We end with newline (paragraph completion)
+        # 4. We have accumulated enough new content (reduce micro-updates)
+
+        lines_in_buffer = self.buffer.count('\n')
+        has_significant_content = len(self.buffer) > 50 or lines_in_buffer > self.last_output_lines
+
         should_render = (
             (self.last_was_incomplete and not is_incomplete) or  # Transition to complete
             (not is_incomplete and self.last_output_lines == 0) or  # First complete render
-            self.buffer.endswith('\n')  # Paragraph completion
+            self.buffer.endswith('\n') or  # Paragraph completion
+            has_significant_content  # Accumulated enough content
         )
 
         if should_render:
@@ -423,10 +429,9 @@ def process_character_stream(input_stream: TextIO, width: Optional[int] = None) 
 
 def process_smart_stream(input_stream: TextIO, width: Optional[int] = None) -> None:
     """
-    Process markdown from a stream with adaptive reading strategy.
+    Process markdown from a stream with smart buffering.
 
-    This function tries to detect if we're dealing with fast bulk input (like cat)
-    or slow streaming input (like LLM output or pv throttling) and adapts accordingly.
+    Uses non-blocking reads to detect bulk vs streaming input patterns.
     """
     # Get terminal width
     if width is None:
@@ -446,41 +451,41 @@ def process_smart_stream(input_stream: TextIO, width: Optional[int] = None) -> N
         can_use_select = hasattr(select, 'select') and hasattr(input_stream, 'fileno')
 
         if can_use_select:
-            # Try to detect the input pattern by checking initial availability
-            ready, _, _ = select.select([input_stream], [], [], 0.01)  # Very short timeout
+            # Try to read everything available immediately (for bulk input like cat)
+            ready, _, _ = select.select([input_stream], [], [], 0)  # Non-blocking check
 
             if ready:
-                # Data is immediately available, try to read a chunk
-                chunk = input_stream.read(1024)  # Smaller initial chunk
-                if not chunk:  # EOF
-                    return
-
-                renderer.add_text(chunk)
-
-                # Check if more data is immediately available (bulk input like cat)
-                ready, _, _ = select.select([input_stream], [], [], 0.01)
-
-                if ready:
-                    # Looks like bulk input, read in larger chunks
-                    while True:
-                        ready, _, _ = select.select([input_stream], [], [], 0.05)
-                        if ready:
-                            chunk = input_stream.read(8192)
-                            if not chunk:  # EOF
-                                break
-                            renderer.add_text(chunk)
-                        else:
-                            # No more data immediately available, switch to streaming mode
-                            break
-
-                # Continue with character-by-character for any remaining data
+                # Read all immediately available data
+                all_data = ""
                 while True:
-                    char = input_stream.read(1)
-                    if not char:  # EOF
+                    ready, _, _ = select.select([input_stream], [], [], 0)  # Non-blocking
+                    if ready:
+                        chunk = input_stream.read(8192)
+                        if not chunk:  # EOF
+                            break
+                        all_data += chunk
+                    else:
                         break
-                    renderer.add_text(char)
+
+                if all_data:
+                    # We got bulk data, render it all at once
+                    renderer.render_complete(all_data)
+
+                    # Continue reading any remaining data character by character
+                    while True:
+                        char = input_stream.read(1)
+                        if not char:  # EOF
+                            break
+                        renderer.add_text(char)
+                else:
+                    # No bulk data, use streaming mode
+                    while True:
+                        char = input_stream.read(1)
+                        if not char:  # EOF
+                            break
+                        renderer.add_text(char)
             else:
-                # No immediate data, assume streaming input
+                # No immediate data, use streaming mode
                 while True:
                     char = input_stream.read(1)
                     if not char:  # EOF

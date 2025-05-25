@@ -4,7 +4,7 @@ Tests for md2term module.
 
 from click.testing import CliRunner
 
-from md2term import convert, stream_convert, main
+from md2term import convert, main
 
 
 def test_convert_basic():
@@ -15,17 +15,10 @@ def test_convert_basic():
     assert result == input_text
 
 
-def test_stream_convert():
-    """Test streaming conversion functionality."""
-    input_text = "Hello"
-    result = list(stream_convert(input_text, delay=0))
-    assert result == ["H", "e", "l", "l", "o"]
-
-
 def test_cli_basic():
     """Test basic CLI functionality."""
     runner = CliRunner()
-    result = runner.invoke(main, ["--no-stream"], input="# Test\n\nHello world!")
+    result = runner.invoke(main, input="# Test\n\nHello world!")
     assert result.exit_code == 0
     assert "# Test" in result.output
     assert "Hello world!" in result.output

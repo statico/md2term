@@ -32,7 +32,7 @@ class TerminalRenderer:
     def __init__(self, console: Console):
         self.console = console
         self.in_code_block = False
-        self.code_block_lines = []
+        self.code_block_lines: List[str] = []
         self.code_block_lang = None
 
     def render(self, tokens: List[Dict[str, Any]]) -> None:
@@ -269,6 +269,8 @@ class TerminalRenderer:
             markdown = mistune.create_markdown(renderer=None)
             try:
                 tokens = markdown(callout_content)
+                # Type assertion since we know renderer=None returns tokens
+                assert isinstance(tokens, list)
                 temp_renderer = TerminalRenderer(temp_console)
                 temp_renderer.render(tokens)
             except Exception:
@@ -495,6 +497,8 @@ class StreamingRenderer:
         # Parse and render to temp console
         markdown = mistune.create_markdown(renderer=None)
         tokens = markdown(content)
+        # Type assertion since we know renderer=None returns tokens
+        assert isinstance(tokens, list)
         temp_renderer = TerminalRenderer(temp_console)
         temp_renderer.render(tokens)
 
@@ -529,6 +533,8 @@ class StreamingRenderer:
             try:
                 markdown = mistune.create_markdown(renderer=None)
                 tokens = markdown(self.buffer)
+                # Type assertion since we know renderer=None returns tokens
+                assert isinstance(tokens, list)
                 renderer = TerminalRenderer(self.console)
                 renderer.render(tokens)
             except Exception:
@@ -544,6 +550,8 @@ class StreamingRenderer:
             try:
                 markdown = mistune.create_markdown(renderer=None)
                 tokens = markdown(self.buffer)
+                # Type assertion since we know renderer=None returns tokens
+                assert isinstance(tokens, list)
                 renderer = TerminalRenderer(self.console)
                 renderer.render(tokens)
             except Exception:

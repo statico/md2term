@@ -2,11 +2,11 @@
 
 [![GitHub repo](https://img.shields.io/badge/github-repo-green)](https://github.com/statico/md2term) [![PyPI](https://img.shields.io/pypi/v/md2term.svg)](https://pypi.org/project/md2term/) [![Changelog](https://img.shields.io/github/v/release/statico/md2term?include_prereleases&label=changelog)](https://github.com/statico/md2term/releases) [![Tests](https://github.com/statico/md2term/workflows/Test/badge.svg)](https://github.com/statico/md2term/actions?query=workflow%3ATest) [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/statico/md2term/blob/main/LICENSE)
 
-A beautiful markdown-to-terminal converter that renders markdown with rich formatting, syntax highlighting, and proper terminal layout.
+A streaming markdown-to-terminal converter that renders markdown with rich formatting, syntax highlighting, and proper terminal layout.
 
-It supports streaming so you can pipe [your favorite LLM tool](https://github.com/simonw/llm) to it, like this:
+Streaming is supported so you can pipe [your favorite LLM tool](https://github.com/simonw/llm) to it, like this:
 
-![x](https://github.com/user-attachments/assets/5a48c8dc-88f3-4ff7-bed2-ffbd7cd531b7)
+![demo](https://github.com/user-attachments/assets/b64d5f92-4ecd-49fd-b733-0ee81955013b)
 
 > [!NOTE]
 > This software was created almost entirely by AI with [Cursor](https://www.cursor.com/) and [Claude 4 Sonnet](https://www.anthropic.com/).

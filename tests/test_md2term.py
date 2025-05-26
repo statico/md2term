@@ -15,6 +15,13 @@ from rich.console import Console
 
 def create_test_console(output, width=80):
     """Create a console with consistent settings for testing."""
+    import os
+    # Force consistent environment for testing
+    os.environ['FORCE_COLOR'] = '1'
+    os.environ['TERM'] = 'xterm-256color'
+    os.environ['COLORTERM'] = 'truecolor'
+    os.environ['NO_COLOR'] = ''
+
     return Console(
         file=output,
         width=width,

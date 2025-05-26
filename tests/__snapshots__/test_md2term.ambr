@@ -128,9 +128,10 @@
 # name: TestMarkdownFeatures.test_blockquotes
   '''
   [2;34m│[0m [2;3;34mThis is a blockquote with some important information. It can span multiple [0m
-  [2;34m│[0m [2;3;34mlines and contain bold and italic text.[0m
+  [2;34m│[0m [2;3;34mlines and contain [0m[1;2;3;34m[[0m[2;3;34m1mbold[0m[1;2;3;34m[[0m[2;3;34m0m and [0m[1;2;3;34m[[0m[2;3;34m3mitalic[0m[1;2;3;34m[[0m[2;3;34m0m text.[0m
   [2;34m│[0m
-  [2;34m│[0m [2;3;34mIt can even contain inline code and links [0m[1;2;3;34m([0m[2;3;4;34mhttps://example.com[0m[2;3;4;34m)[0m[2;3;4;34m.[0m
+  [2;34m│[0m [2;3;34mIt can even contain [0m[1;2;3;34m[[0m[1;2;3;34m1[0m[2;3;34m;[0m[1;2;3;34m31[0m[2;3;34m;40minline code[0m[1;2;3;34m[[0m[2;3;34m0m and [0m[1;2;3;34m[[0m[1;2;3;34m1[0m[2;3;34m;[0m[1;2;3;34m4[0m[2;3;34m;34mlinks[0m[1;2;3;34m[[0m[2;3;34m0m[0m[1;2;3;34m[[0m[1;2;3;34m2[0m[2;3;34m;34m [0m
+  [1;2;3;34m([0m[2;3;4;34mhttps://example.com[0m[2;3;4;34m)[0m[2;3;34m[0m[1;2;3;34m[[0m[2;3;34m0m.[0m
   
   '''
 # ---
@@ -250,24 +251,25 @@
   [1;95mUnordered List[0m
   
   [1;33m•[0m First item
-  [1;33m•[0m Second item with bold text
-  [1;33m•[0m Third item with italic text
-  [1;33m•[0m Fourth item with inline code
+  [1;33m•[0m Second item with [1mbold text[0m
+  [1;33m•[0m Third item with [3mitalic text[0m
+  [1;33m•[0m Fourth item with [1;31;40minline code[0m
   
   [1;95mOrdered List[0m
   
-  [1;36m1[0m[1;36m.[0m First numbered item
-  [1;36m2[0m[1;36m.[0m Second numbered item
-  [1;36m3[0m[1;36m.[0m Third numbered item with a link [1m([0m[4;94mhttps://example.com[0m[4;94m)[0m
-  [1;36m4[0m[1;36m.[0m Fourth numbered item
+  [1;36m1.[0m First numbered item
+  [1;36m2.[0m Second numbered item
+  [1;36m3.[0m Third numbered item with a [1;4;34mlink[0m[2;34m (https://example.com)[0m
+  [1;36m4.[0m Fourth numbered item
   
   [1;94mBlockquotes[0m
   [34m────────────────────────────────────────────────────────────────────────────────[0m
   
   [2;34m│[0m [2;3;34mThis is a blockquote with some important information. It can span multiple [0m
-  [2;34m│[0m [2;3;34mlines and contain bold and italic text.[0m
+  [2;34m│[0m [2;3;34mlines and contain [0m[1;2;3;34m[[0m[2;3;34m1mbold[0m[1;2;3;34m[[0m[2;3;34m0m and [0m[1;2;3;34m[[0m[2;3;34m3mitalic[0m[1;2;3;34m[[0m[2;3;34m0m text.[0m
   [2;34m│[0m
-  [2;34m│[0m [2;3;34mIt can even contain inline code and links [0m[1;2;3;34m([0m[2;3;4;34mhttps://example.com[0m[2;3;4;34m)[0m[2;3;4;34m.[0m
+  [2;34m│[0m [2;3;34mIt can even contain [0m[1;2;3;34m[[0m[1;2;3;34m1[0m[2;3;34m;[0m[1;2;3;34m31[0m[2;3;34m;40minline code[0m[1;2;3;34m[[0m[2;3;34m0m and [0m[1;2;3;34m[[0m[1;2;3;34m1[0m[2;3;34m;[0m[1;2;3;34m4[0m[2;3;34m;34mlinks[0m[1;2;3;34m[[0m[2;3;34m0m[0m[1;2;3;34m[[0m[1;2;3;34m2[0m[2;3;34m;34m [0m
+  [1;2;3;34m([0m[2;3;4;34mhttps://example.com[0m[2;3;4;34m)[0m[2;3;34m[0m[1;2;3;34m[[0m[2;3;34m0m.[0m
   
   [2;34m│[0m [2;3;34mThis is another blockquote to show multiple quotes.[0m
   
@@ -351,18 +353,21 @@
   [33m╭────────────────────────────────────────────────────────────────────────────╮[0m
   [33m│[0m [1;33m⚠️  Complex Warning[0m                                                         [33m│[0m
   [33m│[0m                                                                            [33m│[0m
-  [33m│[0m This callout contains bold text, italic text, and inline code.             [33m│[0m
+  [33m│[0m This callout contains [1mbold text[0m, [3mitalic text[0m, and              [33m│[0m
+  [33m│[0m [1;31;40minline code[0m.                                                   [33m│[0m
   [33m│[0m                                                                            [33m│[0m
   [33m│[0m It can also contain:                                                       [33m│[0m
   [33m│[0m                                                                            [33m│[0m
-  [33m│[0m • Bullet points • Multiple paragraphs • Even links (https://example.com)   [33m│[0m
-  [33m│[0m ╭───────────────────────────────────────────────────────────────────────── [33m│[0m
-  [33m│[0m ─╮ │ # And code blocks!                                                    [33m│[0m
-  [33m│[0m │ │ def example():                                                         [33m│[0m
-  [33m│[0m │ │     return "Hello from a callout!"                                     [33m│[0m
-  [33m│[0m │                                                                          [33m│[0m
-  [33m│[0m ╰───────────────────────────────────────────────────────────────────────── [33m│[0m
-  [33m│[0m ─╯                                                                         [33m│[0m
+  [33m│[0m [1;33m•[0m Bullet points [1;33m•[0m Multiple paragraphs [1;33m•[0m Even    [33m│[0m
+  [33m│[0m [1;4;34mlinks[0m[2;34m (https://example.com)[0m                            [33m│[0m
+  [33m│[0m [2m╭────────────────────────────────────────────────────────────────────── [33m│[0m
+  [33m│[0m ────╮[0m [2m│[0m [2;49m# And code blocks![0m                               [33m│[0m
+  [33m│[0m [2m│[0m [2m│[0m [94;49mdef[0m[90;49m [0m[92;49mexample[0m[49m():[0m        [33m│[0m
+  [33m│[0m [2m│[0m [2m│[0m [49m    [0m[94;49mreturn[0m[49m [0m[33;49m"[0m[33;49mHello [33m│[0m
+  [33m│[0m from a callout![0m[33;49m"[0m                                              [33m│[0m
+  [33m│[0m [2m│[0m                                                                    [33m│[0m
+  [33m│[0m [2m╰────────────────────────────────────────────────────────────────────── [33m│[0m
+  [33m│[0m ────╯[0m                                                                   [33m│[0m
   [33m╰────────────────────────────────────────────────────────────────────────────╯[0m
   
   That's all folks!
@@ -419,10 +424,10 @@
 # ---
 # name: TestMarkdownFeatures.test_ordered_lists
   '''
-  [1;36m1[0m[1;36m.[0m First numbered item
-  [1;36m2[0m[1;36m.[0m Second numbered item
-  [1;36m3[0m[1;36m.[0m Third numbered item with a link [1m([0m[4;94mhttps://example.com[0m[4;94m)[0m
-  [1;36m4[0m[1;36m.[0m Fourth numbered item
+  [1;36m1.[0m First numbered item
+  [1;36m2.[0m Second numbered item
+  [1;36m3.[0m Third numbered item with a [1;4;34mlink[0m[2;34m (https://example.com)[0m
+  [1;36m4.[0m Fourth numbered item
   
   '''
 # ---
@@ -436,9 +441,9 @@
 # name: TestMarkdownFeatures.test_unordered_lists
   '''
   [1;33m•[0m First item
-  [1;33m•[0m Second item with bold text
-  [1;33m•[0m Third item with italic text
-  [1;33m•[0m Fourth item with inline code
+  [1;33m•[0m Second item with [1mbold text[0m
+  [1;33m•[0m Third item with [3mitalic text[0m
+  [1;33m•[0m Fourth item with [1;31;40minline code[0m
   
   '''
 # ---

@@ -132,7 +132,13 @@ class TerminalRenderer:
         # Render children into a string buffer
         old_console = self.console
         buffer = StringIO()
-        temp_console = Console(file=buffer, width=self.console.size.width - 4)
+        temp_console = Console(
+            file=buffer,
+            width=self.console.size.width - 4,
+            force_terminal=True,
+            color_system="256",
+            legacy_windows=False
+        )
         self.console = temp_console
 
         for child in token['children']:
@@ -242,7 +248,13 @@ class TerminalRenderer:
             # Parse and render the content with markdown
             old_console = self.console
             content_buffer = StringIO()
-            temp_console = Console(file=content_buffer, width=self.console.size.width - 6)
+            temp_console = Console(
+                file=content_buffer,
+                width=self.console.size.width - 6,
+                force_terminal=True,
+                color_system="256",
+                legacy_windows=False
+            )
             self.console = temp_console
 
             # Parse the content as markdown
@@ -290,20 +302,45 @@ class TerminalRenderer:
                 marker = "•"
                 marker_style = "bold yellow"
 
-            # Render list item content
-            old_console = self.console
-            buffer = StringIO()
-            temp_console = Console(file=buffer, width=self.console.size.width - 4)
-            self.console = temp_console
+            # Create the marker text
+            marker_text = Text(marker, style=marker_style)
 
+            # Render list item content as Rich Text objects
+            content_text = Text()
             for child in item['children']:
-                self._render_token(child)
+                if child['type'] == 'paragraph':
+                    # For paragraphs, render inline tokens directly
+                    for inline_child in child['children']:
+                        if inline_child['type'] == 'text':
+                            content_text.append(inline_child['raw'])
+                        else:
+                            # Render other inline tokens
+                            inline_text = self._render_inline_tokens([inline_child])
+                            content_text.append_text(inline_text)
+                else:
+                    # For other types, fall back to the old method
+                    old_console = self.console
+                    buffer = StringIO()
+                    temp_console = Console(
+                        file=buffer,
+                        width=self.console.size.width - 4,
+                        force_terminal=True,
+                        color_system="256",
+                        legacy_windows=False
+                    )
+                    self.console = temp_console
+                    self._render_token(child)
+                    self.console = old_console
+                    content_text.append(buffer.getvalue().rstrip())
 
-            self.console = old_console
-            content = buffer.getvalue().rstrip()
+            # Combine marker and content
+            line_text = Text()
+            line_text.append_text(marker_text)
+            line_text.append(" ")
+            line_text.append_text(content_text)
 
-            # Print with proper indentation
-            self.console.print(f"[{marker_style}]{marker}[/] {content}")
+            # Print the complete line
+            self.console.print(line_text)
 
     def _render_thematic_break(self) -> None:
         """Render a horizontal rule."""

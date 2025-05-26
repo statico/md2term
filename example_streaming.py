@@ -114,7 +114,7 @@ def simulate_chunk_streaming():
         "## Authentication\n\n",
         "To authenticate, you'll need an API key:\n\n",
         "```bash\n",
-        "curl -H \"Authorization: Bearer YOUR_API_KEY\" \\\n",
+        'curl -H "Authorization: Bearer YOUR_API_KEY" \\\n',
         "     https://api.example.com/v1/data\n",
         "```\n\n",
         "## Rate Limits\n\n",
@@ -124,7 +124,7 @@ def simulate_chunk_streaming():
         "- **Enterprise**: *Unlimited*\n\n",
         "> **Important**: Rate limits reset every hour\n",
         "> at the top of the hour (e.g., 2:00 PM, 3:00 PM).\n\n",
-        "For more information, visit our [support page](https://example.com/support).\n"
+        "For more information, visit our [support page](https://example.com/support).\n",
     ]
 
     # Get terminal width
@@ -177,7 +177,7 @@ def demonstrate_library_usage():
         "```json\n",
         '{\n  "status": "success",\n  "data": [\n    {"id": 1, "name": "Item 1"},\n    {"id": 2, "name": "Item 2"}\n  ]\n}\n',
         "```\n\n",
-        "Analysis complete! 🎉"
+        "Analysis complete! 🎉",
     ]
 
     # Set up md2term streaming
@@ -202,7 +202,9 @@ def demonstrate_library_usage():
 
 if __name__ == "__main__":
     print("🚀 md2term Library Streaming Examples\n")
-    print("This demonstrates how to use md2term as a library in your Python applications.")
+    print(
+        "This demonstrates how to use md2term as a library in your Python applications."
+    )
     print("Press Ctrl+C at any time to interrupt.\n")
 
     # Run the examples
@@ -210,12 +212,12 @@ if __name__ == "__main__":
         # Example 1: Character-by-character streaming (like LLM output)
         simulate_llm_streaming()
 
-        print("\n" + "="*60 + "\n")
+        print("\n" + "=" * 60 + "\n")
 
         # Example 2: Chunk-based streaming (more realistic)
         simulate_chunk_streaming()
 
-        print("\n" + "="*60 + "\n")
+        print("\n" + "=" * 60 + "\n")
 
         # Example 3: Library integration pattern
         demonstrate_library_usage()

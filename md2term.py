@@ -3,7 +3,6 @@ md2term - Parse Markdown and turn it into nicely-formatted text for terminal dis
 """
 
 import sys
-import os
 import shutil
 import re
 import time
@@ -18,9 +17,6 @@ from rich.text import Text
 from rich.syntax import Syntax
 from rich.rule import Rule
 from rich.panel import Panel
-from rich.table import Table
-from rich.columns import Columns
-from rich import box
 
 # Configure rich-click for better readability
 click.rich_click.USE_RICH_MARKUP = True
@@ -43,35 +39,39 @@ class TerminalRenderer:
         """Render a list of markdown tokens to the terminal."""
         for i, token in enumerate(tokens):
             # Only add spacing between non-blank-line elements
-            if i > 0 and token['type'] != 'blank_line' and tokens[i-1]['type'] != 'blank_line':
+            if (
+                i > 0
+                and token["type"] != "blank_line"
+                and tokens[i - 1]["type"] != "blank_line"
+            ):
                 self.console.print()
             self._render_token(token)
 
     def _render_token(self, token: Dict[str, Any]) -> None:
         """Render a single markdown token."""
-        token_type = token['type']
+        token_type = token["type"]
 
-        if token_type == 'heading':
+        if token_type == "heading":
             self._render_heading(token)
-        elif token_type == 'paragraph':
+        elif token_type == "paragraph":
             self._render_paragraph(token)
-        elif token_type == 'block_text':
+        elif token_type == "block_text":
             self._render_block_text(token)
-        elif token_type == 'block_code':
+        elif token_type == "block_code":
             self._render_code_block(token)
-        elif token_type == 'block_quote':
+        elif token_type == "block_quote":
             self._render_blockquote(token)
-        elif token_type == 'list':
+        elif token_type == "list":
             self._render_list(token)
-        elif token_type == 'thematic_break':
+        elif token_type == "thematic_break":
             self._render_thematic_break()
-        elif token_type == 'blank_line':
+        elif token_type == "blank_line":
             self.console.print()
 
     def _render_heading(self, token: Dict[str, Any]) -> None:
         """Render a heading with appropriate styling."""
-        level = token['attrs']['level']
-        text = self._render_inline_tokens(token['children'])
+        level = token["attrs"]["level"]
+        text = self._render_inline_tokens(token["children"])
 
         # Different colors and styles for different heading levels
         if level == 1:
@@ -98,33 +98,39 @@ class TerminalRenderer:
 
     def _render_paragraph(self, token: Dict[str, Any]) -> None:
         """Render a paragraph with proper word wrapping."""
-        text = self._render_inline_tokens(token['children'])
+        text = self._render_inline_tokens(token["children"])
         self.console.print(text)
 
     def _render_block_text(self, token: Dict[str, Any]) -> None:
         """Render block text (used in list items and other contexts)."""
-        text = self._render_inline_tokens(token['children'])
+        text = self._render_inline_tokens(token["children"])
         self.console.print(text, end="")
 
     def _render_code_block(self, token: Dict[str, Any]) -> None:
         """Render a code block with syntax highlighting."""
-        code = token['raw'].rstrip()
+        code = token["raw"].rstrip()
         # Handle different token structures - some have 'attrs', others have 'info' directly
-        if 'attrs' in token:
-            lang = token['attrs'].get('info', '').strip() or 'text'
+        if "attrs" in token:
+            lang = token["attrs"].get("info", "").strip() or "text"
         else:
-            lang = token.get('info', '').strip() or 'text'
+            lang = token.get("info", "").strip() or "text"
 
         try:
             # Use Rich's syntax highlighting with a simpler theme for consistency
-            syntax = Syntax(code, lang, theme="ansi_dark", line_numbers=False,
-                          background_color="default")
+            syntax = Syntax(
+                code,
+                lang,
+                theme="ansi_dark",
+                line_numbers=False,
+                background_color="default",
+            )
             panel = Panel(syntax, border_style="dim", padding=(0, 1))
             self.console.print(panel)
         except Exception:
             # Fallback to simple code formatting if syntax highlighting fails
-            panel = Panel(code, border_style="dim", style="dim white on black",
-                         padding=(0, 1))
+            panel = Panel(
+                code, border_style="dim", style="dim white on black", padding=(0, 1)
+            )
             self.console.print(panel)
 
     def _render_blockquote(self, token: Dict[str, Any]) -> None:
@@ -137,11 +143,11 @@ class TerminalRenderer:
             width=self.console.size.width - 4,
             force_terminal=True,
             color_system="256",
-            legacy_windows=False
+            legacy_windows=False,
         )
         self.console = temp_console
 
-        for child in token['children']:
+        for child in token["children"]:
             self._render_token(child)
 
         self.console = old_console
@@ -154,23 +160,23 @@ class TerminalRenderer:
             self._render_callout(content, callout_info)
         else:
             # Create GitHub-style blockquote with left border only
-            lines = content.split('\n')
+            lines = content.split("\n")
             for line in lines:
                 if line.strip():  # Only add border to non-empty lines
                     self.console.print(f"[dim blue]│[/] [italic dim blue]{line}[/]")
                 else:
-                    self.console.print(f"[dim blue]│[/]")
+                    self.console.print("[dim blue]│[/]")
 
     def _detect_callout(self, content: str) -> Optional[Dict[str, str]]:
         """Detect GitHub-style callouts in blockquote content."""
-        lines = content.strip().split('\n')
+        lines = content.strip().split("\n")
         if not lines:
             return None
 
         first_line = lines[0].strip()
 
         # Match patterns like "[!NOTE]" or "[!NOTE] Custom Title"
-        callout_pattern = r'^\[!([A-Z]+)\](?:\s+(.+))?$'
+        callout_pattern = r"^\[!([A-Z]+)\](?:\s+(.+))?$"
         match = re.match(callout_pattern, first_line)
 
         if match:
@@ -179,66 +185,66 @@ class TerminalRenderer:
 
             # Get the content after the callout declaration
             content_lines = lines[1:] if len(lines) > 1 else []
-            callout_content = '\n'.join(content_lines).strip()
+            callout_content = "\n".join(content_lines).strip()
 
             return {
-                'type': callout_type,
-                'title': custom_title,
-                'content': callout_content
+                "type": callout_type,
+                "title": custom_title,
+                "content": callout_content,
             }
 
         return None
 
     def _render_callout(self, content: str, callout_info: Dict[str, str]) -> None:
         """Render a GitHub-style callout with emoji and appropriate styling."""
-        callout_type = callout_info['type']
-        custom_title = callout_info['title']
-        callout_content = callout_info['content']
+        callout_type = callout_info["type"]
+        custom_title = callout_info["title"]
+        callout_content = callout_info["content"]
 
         # Define callout styles and emojis
         callout_styles = {
-            'note': {
-                'emoji': '📝',
-                'title': 'Note',
-                'border_style': 'blue',
-                'title_style': 'bold blue',
-                'content_style': 'blue'
+            "note": {
+                "emoji": "📝",
+                "title": "Note",
+                "border_style": "blue",
+                "title_style": "bold blue",
+                "content_style": "blue",
             },
-            'tip': {
-                'emoji': '💡',
-                'title': 'Tip',
-                'border_style': 'green',
-                'title_style': 'bold green',
-                'content_style': 'green'
+            "tip": {
+                "emoji": "💡",
+                "title": "Tip",
+                "border_style": "green",
+                "title_style": "bold green",
+                "content_style": "green",
             },
-            'warning': {
-                'emoji': '⚠️',
-                'title': 'Warning',
-                'border_style': 'yellow',
-                'title_style': 'bold yellow',
-                'content_style': 'yellow'
+            "warning": {
+                "emoji": "⚠️",
+                "title": "Warning",
+                "border_style": "yellow",
+                "title_style": "bold yellow",
+                "content_style": "yellow",
             },
-            'important': {
-                'emoji': '❗',
-                'title': 'Important',
-                'border_style': 'magenta',
-                'title_style': 'bold magenta',
-                'content_style': 'magenta'
+            "important": {
+                "emoji": "❗",
+                "title": "Important",
+                "border_style": "magenta",
+                "title_style": "bold magenta",
+                "content_style": "magenta",
             },
-            'caution': {
-                'emoji': '🚨',
-                'title': 'Caution',
-                'border_style': 'red',
-                'title_style': 'bold red',
-                'content_style': 'red'
-            }
+            "caution": {
+                "emoji": "🚨",
+                "title": "Caution",
+                "border_style": "red",
+                "title_style": "bold red",
+                "content_style": "red",
+            },
         }
 
         # Get style info, default to note if unknown type
-        style = callout_styles.get(callout_type, callout_styles['note'])
+        style = callout_styles.get(callout_type, callout_styles["note"])
 
         # Use custom title if provided, otherwise use default
-        title = custom_title if custom_title else style['title']
+        title = custom_title if custom_title else style["title"]
 
         # Create the title line with emoji and two extra spaces
         title_line = f"{style['emoji']}  {title}"
@@ -253,12 +259,13 @@ class TerminalRenderer:
                 width=self.console.size.width - 6,
                 force_terminal=True,
                 color_system="256",
-                legacy_windows=False
+                legacy_windows=False,
             )
             self.console = temp_console
 
             # Parse the content as markdown
             import mistune
+
             markdown = mistune.create_markdown(renderer=None)
             try:
                 tokens = markdown(callout_content)
@@ -273,7 +280,9 @@ class TerminalRenderer:
 
             # Create panel with title and content properly separated
             if rendered_content:
-                panel_content = f"[{style['title_style']}]{title_line}[/]\n\n{rendered_content}"
+                panel_content = (
+                    f"[{style['title_style']}]{title_line}[/]\n\n{rendered_content}"
+                )
             else:
                 panel_content = f"[{style['title_style']}]{title_line}[/]"
         else:
@@ -283,18 +292,18 @@ class TerminalRenderer:
         # Create and display the panel
         panel = Panel(
             panel_content,
-            border_style=style['border_style'],
+            border_style=style["border_style"],
             padding=(0, 1),
-            expand=False
+            expand=False,
         )
         self.console.print(panel)
 
     def _render_list(self, token: Dict[str, Any]) -> None:
         """Render ordered or unordered lists."""
-        ordered = token['attrs'].get('ordered', False)
-        start = token['attrs'].get('start', 1)
+        ordered = token["attrs"].get("ordered", False)
+        start = token["attrs"].get("start", 1)
 
-        for i, item in enumerate(token['children']):
+        for i, item in enumerate(token["children"]):
             if ordered:
                 marker = f"{start + i}."
                 marker_style = "bold cyan"
@@ -307,12 +316,12 @@ class TerminalRenderer:
 
             # Render list item content as Rich Text objects
             content_text = Text()
-            for child in item['children']:
-                if child['type'] == 'paragraph':
+            for child in item["children"]:
+                if child["type"] == "paragraph":
                     # For paragraphs, render inline tokens directly
-                    for inline_child in child['children']:
-                        if inline_child['type'] == 'text':
-                            content_text.append(inline_child['raw'])
+                    for inline_child in child["children"]:
+                        if inline_child["type"] == "text":
+                            content_text.append(inline_child["raw"])
                         else:
                             # Render other inline tokens
                             inline_text = self._render_inline_tokens([inline_child])
@@ -326,7 +335,7 @@ class TerminalRenderer:
                         width=self.console.size.width - 4,
                         force_terminal=True,
                         color_system="256",
-                        legacy_windows=False
+                        legacy_windows=False,
                     )
                     self.console = temp_console
                     self._render_token(child)
@@ -351,32 +360,32 @@ class TerminalRenderer:
         text = Text()
 
         for token in tokens:
-            if token['type'] == 'text':
-                text.append(token['raw'])
-            elif token['type'] == 'emphasis':
-                child_text = self._render_inline_tokens(token['children'])
+            if token["type"] == "text":
+                text.append(token["raw"])
+            elif token["type"] == "emphasis":
+                child_text = self._render_inline_tokens(token["children"])
                 child_text.stylize("italic")
                 text.append_text(child_text)
-            elif token['type'] == 'strong':
-                child_text = self._render_inline_tokens(token['children'])
+            elif token["type"] == "strong":
+                child_text = self._render_inline_tokens(token["children"])
                 child_text.stylize("bold")
                 text.append_text(child_text)
-            elif token['type'] == 'codespan':
-                text.append(token['raw'], style="bold red on black")
-            elif token['type'] == 'link':
-                link_text = self._render_inline_tokens(token['children'])
-                url = token['attrs']['url']
+            elif token["type"] == "codespan":
+                text.append(token["raw"], style="bold red on black")
+            elif token["type"] == "link":
+                link_text = self._render_inline_tokens(token["children"])
+                url = token["attrs"]["url"]
                 link_text.stylize("bold blue underline")
                 text.append_text(link_text)
                 text.append(f" ({url})", style="dim blue")
-            elif token['type'] == 'image':
-                alt_text = self._render_inline_tokens(token['children']).plain
-                url = token['attrs']['url']
+            elif token["type"] == "image":
+                alt_text = self._render_inline_tokens(token["children"]).plain
+                url = token["attrs"]["url"]
                 text.append(f"[IMAGE: {alt_text}]", style="bold magenta")
                 text.append(f" ({url})", style="dim magenta")
-            elif token['type'] == 'linebreak':
+            elif token["type"] == "linebreak":
                 text.append("\n")
-            elif token['type'] == 'softbreak':
+            elif token["type"] == "softbreak":
                 text.append(" ")
 
         return text
@@ -405,10 +414,13 @@ class StreamingRenderer:
         # 3. Time-based update (every 0.1 seconds) AND some content
         # 4. Buffer ends with complete markdown elements AND short time passed
         should_update = (
-            (self.char_count >= 80 and (current_time - self.last_update_time) >= 0.05) or
-            text.endswith('\n\n') or
-            (self.char_count >= 20 and (current_time - self.last_update_time) >= 0.1) or
-            (self._looks_complete() and (current_time - self.last_update_time) >= 0.08)
+            (self.char_count >= 80 and (current_time - self.last_update_time) >= 0.05)
+            or text.endswith("\n\n")
+            or (self.char_count >= 20 and (current_time - self.last_update_time) >= 0.1)
+            or (
+                self._looks_complete()
+                and (current_time - self.last_update_time) >= 0.08
+            )
         )
 
         if should_update:
@@ -429,19 +441,21 @@ class StreamingRenderer:
         # Consider complete if ends with:
         # - Double newline (paragraph break)
         # - Single newline after certain patterns
-        if self.buffer.endswith('\n\n'):
+        if self.buffer.endswith("\n\n"):
             return True
 
-        if self.buffer.endswith('\n'):
-            lines = self.buffer.rstrip().split('\n')
+        if self.buffer.endswith("\n"):
+            lines = self.buffer.rstrip().split("\n")
             if lines:
                 last_line = lines[-1].strip()
                 # Complete if last line looks like a complete element
-                if (last_line.startswith('#') or  # Heading
-                    last_line.startswith('- ') or  # List item
-                    last_line.startswith('> ') or  # Blockquote
-                    last_line == '---' or  # Horizontal rule
-                    not last_line):  # Empty line
+                if (
+                    last_line.startswith("#")  # Heading
+                    or last_line.startswith("- ")  # List item
+                    or last_line.startswith("> ")  # Blockquote
+                    or last_line == "---"  # Horizontal rule
+                    or not last_line
+                ):  # Empty line
                     return True
 
         return False
@@ -463,8 +477,8 @@ class StreamingRenderer:
         except Exception:
             # Fallback to plain text if markdown parsing fails
             self.console.print(self.buffer, end="")
-            self.last_rendered_lines = self.buffer.count('\n')
-            if self.buffer and not self.buffer.endswith('\n'):
+            self.last_rendered_lines = self.buffer.count("\n")
+            if self.buffer and not self.buffer.endswith("\n"):
                 self.last_rendered_lines += 1
 
     def _render_and_count(self, content: str) -> None:
@@ -475,7 +489,7 @@ class StreamingRenderer:
             file=temp_buffer,
             width=self.console.size.width,
             force_terminal=False,  # Don't force terminal for counting
-            legacy_windows=False
+            legacy_windows=False,
         )
 
         # Parse and render to temp console
@@ -492,8 +506,8 @@ class StreamingRenderer:
         real_renderer.render(tokens)
 
         # Count lines accurately from the actual output
-        self.last_rendered_lines = len(output.split('\n')) - 1
-        if output and not output.endswith('\n'):
+        self.last_rendered_lines = len(output.split("\n")) - 1
+        if output and not output.endswith("\n"):
             self.last_rendered_lines += 1
 
     def _clear_previous_output(self) -> None:
@@ -537,7 +551,7 @@ class StreamingRenderer:
                 self.console.print(self.buffer, end="")
 
         # Ensure we end with a newline if we don't already
-        if self.buffer and not self.buffer.endswith('\n'):
+        if self.buffer and not self.buffer.endswith("\n"):
             self.console.print()
 
 
@@ -644,11 +658,12 @@ def process_smart_stream(input_stream: TextIO, width: Optional[int] = None) -> N
     try:
         # Try to use select for optimization, but fall back gracefully
         import select
+
         use_select = False
 
         try:
             # Check if we can use select (requires real file descriptor)
-            if hasattr(select, 'select') and hasattr(input_stream, 'fileno'):
+            if hasattr(select, "select") and hasattr(input_stream, "fileno"):
                 # Test if fileno() actually works
                 input_stream.fileno()
                 use_select = True

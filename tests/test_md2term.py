@@ -3,10 +3,6 @@ Tests for md2term module using snapshot testing.
 """
 
 import io
-import sys
-from unittest.mock import patch
-
-import pytest
 from click.testing import CliRunner
 
 from md2term import convert, main, TerminalRenderer
@@ -16,11 +12,12 @@ from rich.console import Console
 def create_test_console(output, width=80):
     """Create a console with consistent settings for testing."""
     import os
+
     # Force consistent environment for testing
-    os.environ['FORCE_COLOR'] = '1'
-    os.environ['TERM'] = 'xterm-256color'
-    os.environ['COLORTERM'] = 'truecolor'
-    os.environ['NO_COLOR'] = ''
+    os.environ["FORCE_COLOR"] = "1"
+    os.environ["TERM"] = "xterm-256color"
+    os.environ["COLORTERM"] = "truecolor"
+    os.environ["NO_COLOR"] = ""
 
     return Console(
         file=output,
@@ -28,7 +25,7 @@ def create_test_console(output, width=80):
         force_terminal=True,
         color_system="256",
         legacy_windows=False,
-        force_interactive=False
+        force_interactive=False,
     )
 
 
@@ -55,6 +52,7 @@ class TestMarkdownFeatures:
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -71,6 +69,7 @@ class TestMarkdownFeatures:
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -105,6 +104,7 @@ print(fibonacci(10))
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -114,20 +114,21 @@ print(fibonacci(10))
 
     def test_code_blocks_javascript(self, snapshot):
         """Test JavaScript code block with syntax highlighting."""
-        markdown = '''```javascript
+        markdown = """```javascript
 function greetUser(name) {
   return `Hello, ${name}! Welcome to our application.`;
 }
 
 const users = ["Alice", "Bob", "Charlie"];
 users.forEach((user) => console.log(greetUser(user)));
-```'''
+```"""
 
         output = io.StringIO()
         console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -137,7 +138,7 @@ users.forEach((user) => console.log(greetUser(user)));
 
     def test_code_blocks_bash(self, snapshot):
         """Test Bash code block with syntax highlighting."""
-        markdown = '''```bash
+        markdown = """```bash
 # Install dependencies
 uv add click rich mistune
 
@@ -146,13 +147,14 @@ python md2term.py README.md
 
 # Use with pipes
 curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2term.py
-```'''
+```"""
 
         output = io.StringIO()
         console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -172,6 +174,7 @@ curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2t
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -191,6 +194,7 @@ curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2t
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -210,6 +214,7 @@ curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2t
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -228,6 +233,7 @@ curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2t
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -248,6 +254,7 @@ And here's some text after the horizontal rule."""
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -266,6 +273,7 @@ The next paragraph shows how text wraps naturally based on the terminal width, w
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -283,6 +291,7 @@ The next paragraph shows how text wraps naturally based on the terminal width, w
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -349,6 +358,7 @@ class TestEdgeCases:
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser("")
         renderer.render(tokens)
@@ -365,6 +375,7 @@ class TestEdgeCases:
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -374,16 +385,17 @@ class TestEdgeCases:
 
     def test_code_block_without_language(self, snapshot):
         """Test code block without language specification."""
-        markdown = '''```
+        markdown = """```
 def hello():
     print("Hello, World!")
-```'''
+```"""
 
         output = io.StringIO()
         console = create_test_console(output)
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -400,6 +412,7 @@ def hello():
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -416,6 +429,7 @@ def hello():
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -443,6 +457,7 @@ class TestSpecialCharacters:
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)
@@ -459,6 +474,7 @@ class TestSpecialCharacters:
         renderer = TerminalRenderer(console)
 
         import mistune
+
         markdown_parser = mistune.create_markdown(renderer=None)
         tokens = markdown_parser(markdown)
         renderer.render(tokens)

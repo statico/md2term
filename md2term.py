@@ -517,7 +517,7 @@ def convert(markdown_text: str, width: Optional[int] = None) -> None:
         width = shutil.get_terminal_size().columns
 
     # Create console with proper width
-    console = Console(width=width, force_terminal=True)
+    console = Console(width=width, force_terminal=True, color_system="256")
 
     # Use the unified streaming renderer for consistent output
     renderer = StreamingRenderer(console)
@@ -536,7 +536,7 @@ def process_stream(input_stream: TextIO, width: Optional[int] = None) -> None:
         width = shutil.get_terminal_size().columns
 
     # Create console with proper width
-    console = Console(width=width, force_terminal=True)
+    console = Console(width=width, force_terminal=True, color_system="256")
 
     # Create streaming renderer
     renderer = StreamingRenderer(console)
@@ -564,7 +564,7 @@ def process_character_stream(input_stream: TextIO, width: Optional[int] = None) 
         width = shutil.get_terminal_size().columns
 
     # Create console with proper width
-    console = Console(width=width, force_terminal=True)
+    console = Console(width=width, force_terminal=True, color_system="256")
 
     # Create streaming renderer
     renderer = StreamingRenderer(console)
@@ -599,7 +599,7 @@ def process_smart_stream(input_stream: TextIO, width: Optional[int] = None) -> N
         width = shutil.get_terminal_size().columns
 
     # Create console with proper width
-    console = Console(width=width, force_terminal=True)
+    console = Console(width=width, force_terminal=True, color_system="256")
 
     # Create streaming renderer
     renderer = StreamingRenderer(console)

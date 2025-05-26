@@ -15,7 +15,14 @@ from rich.console import Console
 
 def create_test_console(output, width=80):
     """Create a console with consistent settings for testing."""
-    return Console(file=output, width=width, force_terminal=True, color_system="256")
+    return Console(
+        file=output,
+        width=width,
+        force_terminal=True,
+        color_system="256",
+        legacy_windows=False,
+        force_interactive=False
+    )
 
 
 class TestMarkdownFeatures:

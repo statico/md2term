@@ -25,7 +25,6 @@ md2term/
 ├── pyproject.toml          # Project config, dependencies, scripts
 ├── tests/test_md2term.py   # Test suite
 ├── README.md               # Documentation
-├── CHANGELOG.md            # Version history
 └── .github/workflows/      # CI/CD (Python 3.13 only)
 ```
 
@@ -76,7 +75,6 @@ uv build
 2. **Update tests** in `tests/test_md2term.py` for new functionality
 3. **Run the full test suite** before committing
 4. **Update version** in both `md2term.py` and `pyproject.toml`
-5. **Update CHANGELOG.md** for notable changes
 
 ## Important Notes
 

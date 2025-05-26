@@ -21,14 +21,12 @@ alwaysApply: false
    - `cat example.md | pv -qL 20 | uv run md2term`
    - `uv run md2term README.md`
    - `uv run md2term --help`
-4. **Update CHANGELOG.md** with new features/fixes
 5. **Build package**: `uv build`
 6. **Test built package**: Install wheel and test
 
 ## Release Steps
 1. **Create release branch**: `git checkout -b release/v0.x.x`
 2. **Update versions** in both files
-3. **Update CHANGELOG.md** - move items from Unreleased to new version
 4. **Commit changes**: `git commit -m "Release v0.x.x"`
 5. **Create PR** and merge to main
 6. **Create GitHub release** with tag `v0.x.x`
@@ -38,20 +36,6 @@ alwaysApply: false
 - **Patch (0.1.1)**: Bug fixes, documentation updates
 - **Minor (0.2.0)**: New features, CLI options, backward compatible
 - **Major (1.0.0)**: Breaking changes, API changes
-
-## CHANGELOG Format
-```markdown
-## [0.2.0] - 2025-01-XX
-
-### Added
-- New feature descriptions
-
-### Changed
-- Modified behavior descriptions
-
-### Fixed
-- Bug fix descriptions
-```
 
 ## PyPI Publishing
 - Uses GitHub Actions with trusted publishing

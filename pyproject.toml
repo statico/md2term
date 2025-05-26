@@ -1,11 +1,9 @@
 [project]
 name = "md2term"
-version = "1.0.0"
+version = "1.0.2"
 description = "Parse Markdown and turn it into nicely-formatted text for terminal display"
 readme = "README.md"
-authors = [
-    { name = "Ian Langworth ☠", email = "ian@langworth.com" }
-]
+authors = [{ name = "Ian Langworth ☠", email = "ian@langworth.com" }]
 license = { text = "Apache-2.0" }
 requires-python = ">=3.8.1"
 dependencies = [
@@ -32,16 +30,8 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-test = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "syrupy>=4.0.0",
-]
-dev = [
-    "black>=23.0.0",
-    "ruff>=0.1.0",
-    "mypy>=1.0.0",
-]
+test = ["pytest>=7.0.0", "pytest-cov>=4.0.0", "syrupy>=4.0.0"]
+dev = ["black>=23.0.0", "ruff>=0.1.0", "mypy>=1.0.0"]
 
 [project.urls]
 Homepage = "https://github.com/statico/md2term"

@@ -7,6 +7,8 @@ A beautiful markdown-to-terminal converter that renders markdown with rich forma
 > [!NOTE]
 > This software was created almost entirely by AI with [Cursor](https://www.cursor.com/) and [Claude 4 Sonnet](https://www.anthropic.com/).
 
+![demo](https://static.langworth.com/md2term.svg)
+
 ## Features
 
 - **256-color support** with different shades for headers (H1-H6)

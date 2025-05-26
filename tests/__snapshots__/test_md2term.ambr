@@ -34,7 +34,7 @@
 # ---
 # name: TestCLIInterface.test_cli_version
   '''
-  main, version 1.0.1
+  main, version 1.0.2
   
   '''
 # ---
@@ -141,15 +141,14 @@
   
   [1;93mIngredients:[0m
   
-  [1;33m•[0m [1mCrust:[0m
-    [1;33m•[0m 2 cups graham cracker crumbs (about 40 full crackers)
-    [1;33m•[0m 1/3 cup granulated sugar
-    [1;33m•[0m 1/2 cup unsalted butter, melted
-  [1;33m•[0m [1mCheese Filling:[0m
-    [1;33m•[0m 4 packages (8 oz each) cream cheese, at room temperature
-    [1;33m•[0m 1 cup granulated sugar
-    [1;33m•[0m 1 tablespoon vanilla extract
-    [1;33m•[0m 4 large eggs
+  [1;33m•[0m [1mCrust:[0m[1;33m•[0m 2 cups graham cracker crumbs (about 40 full crackers)
+  [1;33m•[0m 1/3 cup granulated sugar
+  [1;33m•[0m 1/2 cup unsalted butter, melted
+  [1;33m•[0m [1mCheese Filling:[0m[1;33m•[0m 4 packages (8 oz each) cream cheese, at room 
+  temperature
+  [1;33m•[0m 1 cup granulated sugar
+  [1;33m•[0m 1 tablespoon vanilla extract
+  [1;33m•[0m 4 large eggs
   
   '''
 # ---
@@ -394,15 +393,12 @@
 # ---
 # name: TestMarkdownFeatures.test_deeply_nested_lists
   '''
-  [1;33m•[0m Level 1 item
-    [1;33m•[0m Level 2 item
-      [1;33m•[0m Level 3 item
-        [1;33m•[0m Level 4 item
-      [1;33m•[0m Another level 3 item
-    [1;33m•[0m Another level 2 item
-  [1;33m•[0m Another level 1 item
-    [1;33m•[0m Level 2 under second item
-      [1;33m•[0m Level 3 under second item
+  [1;33m•[0m Level 1 item[1;33m•[0m Level 2 item[1;33m•[0m Level 3 item[1;33m•[0m Level 4
+  item
+  [1;33m•[0m Another level 3 item
+  [1;33m•[0m Another level 2 item
+  [1;33m•[0m Another level 1 item[1;33m•[0m Level 2 under second item[1;33m•[0m Level 3
+  under second item
   
   '''
 # ---
@@ -448,15 +444,12 @@
 # ---
 # name: TestMarkdownFeatures.test_mixed_list_types
   '''
-  [1;36m1.[0m First ordered item
-    [1;33m•[0m Unordered sub-item
-    [1;33m•[0m Another unordered sub-item
-      [1;36m1.[0m Nested ordered item
-      [1;36m2.[0m Another nested ordered item
-  [1;36m2.[0m Second ordered item
-    [1;33m•[0m Mixed content here
-      [1;33m•[0m Deep nesting
-        [1;36m1.[0m Very deep ordered item
+  [1;36m1.[0m First ordered item[1;33m•[0m Unordered sub-item
+  [1;33m•[0m Another unordered sub-item[1;36m1.[0m Nested ordered item
+  [1;36m2.[0m Another nested ordered item
+  [1;36m2.[0m Second ordered item[1;33m•[0m Mixed content here[1;33m•[0m Deep 
+  nesting[1;36m1.[0m Very deep ordered
+  item
   
   '''
 # ---
@@ -474,32 +467,28 @@
   
   [1;93mIngredients:[0m
   
-  [1;33m•[0m [1mCrust:[0m
-    [1;33m•[0m 2 cups graham cracker crumbs (about 40 full crackers)
-    [1;33m•[0m 1/3 cup granulated sugar
-    [1;33m•[0m 1/2 cup unsalted butter, melted
-  [1;33m•[0m [1mCheese Filling:[0m
-    [1;33m•[0m 4 packages (8 oz each) cream cheese, at room temperature
-    [1;33m•[0m 1 cup granulated sugar
-    [1;33m•[0m 1 tablespoon vanilla extract
-    [1;33m•[0m 4 large eggs
+  [1;33m•[0m [1mCrust:[0m[1;33m•[0m 2 cups graham cracker crumbs (about 40 full crackers)
+  [1;33m•[0m 1/3 cup granulated sugar
+  [1;33m•[0m 1/2 cup unsalted butter, melted
+  [1;33m•[0m [1mCheese Filling:[0m[1;33m•[0m 4 packages (8 oz each) cream cheese, at room 
+  temperature
+  [1;33m•[0m 1 cup granulated sugar
+  [1;33m•[0m 1 tablespoon vanilla extract
+  [1;33m•[0m 4 large eggs
   
   [1;93mInstructions:[0m
   
-  [1;36m1.[0m [1mPrepare the crust:[0m
-    [1;36m1.[0m Preheat oven to 350°F (175°C)
-    [1;36m2.[0m Mix graham cracker crumbs and sugar
-    [1;36m3.[0m Add melted butter and mix well
-    [1;36m4.[0m Press into bottom of springform pan
-  [1;36m2.[0m [1mMake the filling:[0m
-    [1;36m1.[0m Beat cream cheese until smooth
-    [1;36m2.[0m Gradually add sugar
-    [1;36m3.[0m Add vanilla extract
-    [1;36m4.[0m Beat in eggs one at a time
-  [1;36m3.[0m [1mBake and cool:[0m
-    [1;36m1.[0m Pour filling over crust
-    [1;36m2.[0m Bake for 50-60 minutes
-    [1;36m3.[0m Cool completely before serving
+  [1;36m1.[0m [1mPrepare the crust:[0m[1;36m1.[0m Preheat oven to 350°F (175°C)
+  [1;36m2.[0m Mix graham cracker crumbs and sugar
+  [1;36m3.[0m Add melted butter and mix well
+  [1;36m4.[0m Press into bottom of springform pan
+  [1;36m2.[0m [1mMake the filling:[0m[1;36m1.[0m Beat cream cheese until smooth
+  [1;36m2.[0m Gradually add sugar
+  [1;36m3.[0m Add vanilla extract
+  [1;36m4.[0m Beat in eggs one at a time
+  [1;36m3.[0m [1mBake and cool:[0m[1;36m1.[0m Pour filling over crust
+  [1;36m2.[0m Bake for 50-60 minutes
+  [1;36m3.[0m Cool completely before serving
   
   '''
 # ---

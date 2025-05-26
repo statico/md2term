@@ -98,6 +98,47 @@ For a comprehensive example of markdown features, see `example.md` in this repos
 
 ## Design Decisions
 
+### Streaming and Timing Strategy
+
+The program uses a sophisticated streaming approach designed to provide responsive real-time rendering while minimizing visual flickering and corruption:
+
+#### Smart Update Frequency Control
+
+The streaming renderer uses balanced update conditions to determine when to re-render content:
+
+1. **Content-based triggers**: Updates when 80+ characters are added AND at least 50ms have passed
+2. **Paragraph breaks**: Immediate updates on double newlines (`\n\n`) for clear content boundaries
+3. **Time-based updates**: Every 100ms if at least 20 characters have been added
+4. **Completion detection**: Updates when content appears complete (headings, list items, blockquotes) AND 80ms have passed
+
+This approach balances responsiveness with performance, avoiding excessive re-rendering while ensuring users see content as it streams in.
+
+#### Backtracking and Re-rendering
+
+- **Minimal re-rendering**: Only re-renders when buffer content actually changes
+- **Accurate line counting**: Uses a temporary console to count output lines before clearing previous content
+- **ANSI escape sequences**: Clears previous output using `\033[1A\033[2K` (move up, clear line) for each rendered line
+- **Fallback handling**: Gracefully falls back to plain text if markdown parsing fails during streaming
+
+#### Input Processing Strategies
+
+The program adapts its reading strategy based on input type:
+
+- **File input**: Reads entire content at once for optimal performance
+- **Stdin streaming**: Uses character-by-character reading with `select()` optimization when available
+- **Chunk optimization**: Reads 64-character chunks when data is readily available, falls back to single characters otherwise
+- **Cross-platform compatibility**: Gracefully handles systems where `select()` or `fileno()` are not available
+
+#### Completion Detection
+
+The renderer intelligently detects when markdown elements appear complete:
+
+- **Double newlines**: Clear paragraph boundaries
+- **Structural elements**: Headings (`#`), list items (`- `), blockquotes (`> `), horizontal rules (`---`)
+- **Empty lines**: Natural content breaks
+
+This allows for responsive updates without waiting for arbitrary timeouts.
+
 ### Code Block Handling
 
 The program uses a smart approach to handle multi-line code blocks:

@@ -11,23 +11,6 @@ It supports streaming so you can pipe [your favorite LLM tool](https://github.co
 > [!NOTE]
 > This software was created almost entirely by AI with [Cursor](https://www.cursor.com/) and [Claude 4 Sonnet](https://www.anthropic.com/).
 
-## Features
-
-- **256-color support** with different shades for headers (H1-H6)
-- **Syntax highlighting** for code blocks using Pygments
-- **Proper word wrapping** based on terminal width (like man pages)
-- **Streaming input processing** for handling large files and stdin
-- **Smart code block handling** - detects triple backticks and processes blocks correctly
-- **Rich formatting** for all markdown elements:
-  - Headers with different colors and styles
-  - Bold and italic text
-  - Code spans with highlighting
-  - Blockquotes with panels
-  - Ordered and unordered lists
-  - Links with URLs
-  - Images with alt text
-  - Horizontal rules
-
 ## Installation
 
 Install md2term using `uv`:

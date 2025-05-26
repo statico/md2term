@@ -4,12 +4,12 @@
 
 A beautiful markdown-to-terminal converter that renders markdown with rich formatting, syntax highlighting, and proper terminal layout.
 
-> [!NOTE]
-> This software was created almost entirely by AI with [Cursor](https://www.cursor.com/) and [Claude 4 Sonnet](https://www.anthropic.com/).
-
 It supports streaming so you can pipe [your favorite LLM tool](https://github.com/simonw/llm) to it, like this:
 
 ![x](https://github.com/user-attachments/assets/5a48c8dc-88f3-4ff7-bed2-ffbd7cd531b7)
+
+> [!NOTE]
+> This software was created almost entirely by AI with [Cursor](https://www.cursor.com/) and [Claude 4 Sonnet](https://www.anthropic.com/).
 
 ## Features
 

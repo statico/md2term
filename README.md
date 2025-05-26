@@ -47,6 +47,9 @@ cat README.md | md2term
 # Pipe from other commands
 curl -s https://raw.githubusercontent.com/user/repo/main/README.md | md2term
 
+# Or commands with slow output
+llm 'tell me long a story about cheesecakes using markdown formatting' | md2term
+
 # Override terminal width
 md2term --width 100 README.md
 

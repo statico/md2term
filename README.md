@@ -2,9 +2,7 @@
 
 [![GitHub repo](https://img.shields.io/badge/github-repo-green)](https://github.com/statico/md2term) [![PyPI](https://img.shields.io/pypi/v/md2term.svg)](https://pypi.org/project/md2term/) [![Changelog](https://img.shields.io/github/v/release/statico/md2term?include_prereleases&label=changelog)](https://github.com/statico/md2term/releases) [![Tests](https://github.com/statico/md2term/workflows/Test/badge.svg)](https://github.com/statico/md2term/actions?query=workflow%3ATest) [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/statico/md2term/blob/main/LICENSE)
 
-A streaming markdown-to-terminal converter that renders markdown with rich formatting, syntax highlighting, and proper terminal layout.
-
-Streaming is supported so you can pipe [your favorite LLM tool](https://github.com/simonw/llm) to it, like this:
+A streaming markdown-to-terminal converter that renders markdown with rich formatting and syntax highlighting. Streaming is supported so you can pipe your favorite LLM CLI tool to it, like [llm](https://github.com/simonw/llm) or [Ollama](https://ollama.com/), like this:
 
 ![demo](https://github.com/user-attachments/assets/b64d5f92-4ecd-49fd-b733-0ee81955013b)
 

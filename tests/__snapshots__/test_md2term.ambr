@@ -2,7 +2,7 @@
 # name: TestCLIInterface.test_cli_help
   '''
                                                                                   
-   Usage: main [OPTIONS] [INPUT_FILE]                                             
+   [33mUsage:[0m [1mmain[0m [[1;36mOPTIONS[0m] [[1;36mINPUT_FILE[0m]                                             
                                                                                   
    Parse Markdown and turn it into nicely-formatted text for terminal display.    
    If no INPUT_FILE is provided, reads from stdin.                                
@@ -17,17 +17,17 @@
    Examples:                                                                      
    md2term README.md                    # Render a markdown file                  
    echo "# Hello" | md2term             # Render from stdin                       
-   cat file.md | pv -qL 20 | md2term    # Simulate streaming input                
-   md2term --width 60 README.md         # Set custom width                        
+   cat file.md | pv [1;32m-qL[0m 20 | md2term    # Simulate streaming input                
+   md2term [1;36m--width[0m 60 README.md         # Set custom width                        
                                                                                   
    The renderer automatically handles both complete files and streaming input,    
    with intelligent backtracking when markdown syntax is incomplete.              
                                                                                   
-  ╭─ Options ────────────────────────────────────────────────────────────────────╮
-  │ --width    -w  INTEGER  Override terminal width                              │
-  │ --version               Show the version and exit.                           │
-  │ --help                  Show this message and exit.                          │
-  ╰──────────────────────────────────────────────────────────────────────────────╯
+  [2m╭─[0m[2m Options [0m[2m───────────────────────────────────────────────────────────────────[0m[2m─╮[0m
+  [2m│[0m [1;36m--width[0m    [1;32m-w[0m  [1;33mINTEGER[0m  Override terminal width                              [2m│[0m
+  [2m│[0m [1;36m--version[0m      [1;33m       [0m  Show the version and exit.                           [2m│[0m
+  [2m│[0m [1;36m--help[0m         [1;33m       [0m  Show this message and exit.                          [2m│[0m
+  [2m╰──────────────────────────────────────────────────────────────────────────────╯[0m
   
   
   '''
@@ -76,13 +76,13 @@
 # name: TestEdgeCases.test_cli_nonexistent_file
   '''
                                                                                   
-   Usage: main [OPTIONS] [INPUT_FILE]                                             
+   [33mUsage:[0m [1mmain[0m [[1;36mOPTIONS[0m] [[1;36mINPUT_FILE[0m]                                             
                                                                                   
-   Try 'main --help' for help                                                     
-  ╭─ Error ──────────────────────────────────────────────────────────────────────╮
-  │ Invalid value for '[INPUT_FILE]': 'nonexistent.md': No such file or          │
-  │ directory                                                                    │
-  ╰──────────────────────────────────────────────────────────────────────────────╯
+  [2m [0m[2mTry[0m[2m [0m[2;34m'main --help'[0m[2m [0m[2mfor help[0m[2m                                                    [0m[2m [0m
+  [31m╭─[0m[31m Error [0m[31m─────────────────────────────────────────────────────────────────────[0m[31m─╮[0m
+  [31m│[0m Invalid value for '[INPUT_FILE]': 'nonexistent.md': No such file or          [31m│[0m
+  [31m│[0m directory                                                                    [31m│[0m
+  [31m╰──────────────────────────────────────────────────────────────────────────────╯[0m
                                                                                   
   
   '''

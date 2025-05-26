@@ -26,6 +26,9 @@ jobs:
 
       - name: Run tests
         run: uv run pytest
+        env:
+          FORCE_COLOR: 1
+          TERM: xterm-256color
 
       - name: Run linting
         run: |

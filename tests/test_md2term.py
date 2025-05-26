@@ -15,7 +15,7 @@ from rich.console import Console
 
 def create_test_console(output, width=80):
     """Create a console with consistent settings for testing."""
-    return Console(file=output, width=width, force_terminal=True, color_system="standard")
+    return Console(file=output, width=width, force_terminal=True, color_system="256")
 
 
 class TestMarkdownFeatures:
@@ -282,7 +282,7 @@ class TestCLIInterface:
 
     def test_cli_with_file_input(self, snapshot):
         """Test CLI with file input."""
-        runner = CliRunner()
+        runner = CliRunner(env={"FORCE_COLOR": "1", "TERM": "xterm-256color"})
         with runner.isolated_filesystem():
             # Create a test markdown file
             with open("test.md", "w") as f:
@@ -294,7 +294,7 @@ class TestCLIInterface:
 
     def test_cli_with_stdin(self, snapshot):
         """Test CLI with stdin input."""
-        runner = CliRunner()
+        runner = CliRunner(env={"FORCE_COLOR": "1", "TERM": "xterm-256color"})
         markdown_input = "# Test Header\n\nThis is a **test** paragraph with `code`."
 
         result = runner.invoke(main, input=markdown_input)
@@ -303,7 +303,7 @@ class TestCLIInterface:
 
     def test_cli_with_width_option(self, snapshot):
         """Test CLI with custom width option."""
-        runner = CliRunner()
+        runner = CliRunner(env={"FORCE_COLOR": "1", "TERM": "xterm-256color"})
         markdown_input = "# Test Header\n\nThis is a very long paragraph that should wrap differently when the terminal width is changed to a smaller value."
 
         result = runner.invoke(main, ["--width", "40"], input=markdown_input)
@@ -312,14 +312,14 @@ class TestCLIInterface:
 
     def test_cli_version(self, snapshot):
         """Test CLI version option."""
-        runner = CliRunner()
+        runner = CliRunner(env={"FORCE_COLOR": "1", "TERM": "xterm-256color"})
         result = runner.invoke(main, ["--version"])
         assert result.exit_code == 0
         assert result.output == snapshot
 
     def test_cli_help(self, snapshot):
         """Test CLI help option."""
-        runner = CliRunner()
+        runner = CliRunner(env={"FORCE_COLOR": "1", "TERM": "xterm-256color"})
         result = runner.invoke(main, ["--help"])
         assert result.exit_code == 0
         assert result.output == snapshot
@@ -411,7 +411,7 @@ def hello():
 
     def test_cli_nonexistent_file(self, snapshot):
         """Test CLI with nonexistent file."""
-        runner = CliRunner()
+        runner = CliRunner(env={"FORCE_COLOR": "1", "TERM": "xterm-256color"})
         result = runner.invoke(main, ["nonexistent.md"])
         assert result.exit_code != 0
         assert result.output == snapshot
@@ -463,7 +463,7 @@ def test_convert_basic():
 
 def test_cli_basic():
     """Test basic CLI functionality (legacy test)."""
-    runner = CliRunner()
+    runner = CliRunner(env={"FORCE_COLOR": "1", "TERM": "xterm-256color"})
     result = runner.invoke(main, input="# Test\n\nHello world!")
     # Note: CLI may have exit code 1 due to streaming processing, but output should be correct
     assert "Test" in result.output

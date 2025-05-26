@@ -23,7 +23,7 @@ click.rich_click.USE_RICH_MARKUP = True
 click.rich_click.STYLE_HELPTEXT = ""  # Remove dim styling from help text
 
 
-__version__ = "0.1.0"
+__version__ = "1.0.1"
 
 
 class TerminalRenderer:

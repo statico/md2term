@@ -300,10 +300,13 @@ class TerminalRenderer:
         )
         self.console.print(panel)
 
-    def _render_list(self, token: Dict[str, Any]) -> None:
-        """Render ordered or unordered lists."""
+    def _render_list(self, token: Dict[str, Any], indent_level: int = 0) -> None:
+        """Render ordered or unordered lists with proper nesting support."""
         ordered = token["attrs"].get("ordered", False)
         start = token["attrs"].get("start", 1)
+
+        # Calculate indentation for this level
+        indent = "  " * indent_level  # 2 spaces per level
 
         for i, item in enumerate(token["children"]):
             if ordered:
@@ -313,45 +316,55 @@ class TerminalRenderer:
                 marker = "•"
                 marker_style = "bold yellow"
 
-            # Create the marker text
-            marker_text = Text(marker, style=marker_style)
+            # Process the list item children
+            has_paragraph = False
+            nested_lists = []
+            paragraph_content = Text()
 
-            # Render list item content as Rich Text objects
-            content_text = Text()
             for child in item["children"]:
                 if child["type"] == "paragraph":
-                    # For paragraphs, render inline tokens directly
+                    has_paragraph = True
+                    # Render inline tokens for the paragraph
                     for inline_child in child["children"]:
                         if inline_child["type"] == "text":
-                            content_text.append(inline_child["raw"])
+                            paragraph_content.append(inline_child["raw"])
                         else:
                             # Render other inline tokens
                             inline_text = self._render_inline_tokens([inline_child])
-                            content_text.append_text(inline_text)
+                            paragraph_content.append_text(inline_text)
+                elif child["type"] == "list":
+                    # Store nested lists to render after the main content
+                    nested_lists.append(child)
                 else:
-                    # For other types, fall back to the old method
-                    old_console = self.console
-                    buffer = StringIO()
-                    temp_console = Console(
-                        file=buffer,
-                        width=self.console.size.width - 4,
-                        force_terminal=True,
-                        color_system="256",
-                        legacy_windows=False,
-                    )
-                    self.console = temp_console
-                    self._render_token(child)
-                    self.console = old_console
-                    content_text.append(buffer.getvalue().rstrip())
+                    # Handle other block elements (shouldn't happen in well-formed markdown)
+                    if not has_paragraph:
+                        # If no paragraph, treat as direct content
+                        old_console = self.console
+                        buffer = StringIO()
+                        temp_console = Console(
+                            file=buffer,
+                            width=self.console.size.width - len(indent) - 4,
+                            force_terminal=True,
+                            color_system="256",
+                            legacy_windows=False,
+                        )
+                        self.console = temp_console
+                        self._render_token(child)
+                        self.console = old_console
+                        paragraph_content.append(buffer.getvalue().rstrip())
 
-            # Combine marker and content
-            line_text = Text()
-            line_text.append_text(marker_text)
-            line_text.append(" ")
-            line_text.append_text(content_text)
+            # Render the main list item line
+            if has_paragraph or paragraph_content.plain:
+                line_text = Text()
+                line_text.append(indent)
+                line_text.append(marker, style=marker_style)
+                line_text.append(" ")
+                line_text.append_text(paragraph_content)
+                self.console.print(line_text)
 
-            # Print the complete line
-            self.console.print(line_text)
+            # Render any nested lists with increased indentation
+            for nested_list in nested_lists:
+                self._render_list(nested_list, indent_level + 1)
 
     def _render_thematic_break(self) -> None:
         """Render a horizontal rule."""

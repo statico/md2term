@@ -202,6 +202,132 @@ curl -s https://raw.githubusercontent.com/user/repo/main/README.md | python md2t
         result = output.getvalue()
         assert result == snapshot
 
+    def test_nested_lists(self, snapshot):
+        """Test nested lists with proper indentation."""
+        markdown = """### Classic New York Style Cheesecake
+
+#### Ingredients:
+- **Crust:**
+  - 2 cups graham cracker crumbs (about 40 full crackers)
+  - 1/3 cup granulated sugar
+  - 1/2 cup unsalted butter, melted
+
+- **Cheese Filling:**
+  - 4 packages (8 oz each) cream cheese, at room temperature
+  - 1 cup granulated sugar
+  - 1 tablespoon vanilla extract
+  - 4 large eggs
+
+#### Instructions:
+1. **Prepare the crust:**
+   1. Preheat oven to 350°F (175°C)
+   2. Mix graham cracker crumbs and sugar
+   3. Add melted butter and mix well
+   4. Press into bottom of springform pan
+
+2. **Make the filling:**
+   1. Beat cream cheese until smooth
+   2. Gradually add sugar
+   3. Add vanilla extract
+   4. Beat in eggs one at a time
+
+3. **Bake and cool:**
+   1. Pour filling over crust
+   2. Bake for 50-60 minutes
+   3. Cool completely before serving"""
+
+        output = io.StringIO()
+        console = create_test_console(output)
+        renderer = TerminalRenderer(console)
+
+        import mistune
+
+        markdown_parser = mistune.create_markdown(renderer=None)
+        tokens = markdown_parser(markdown)
+        renderer.render(tokens)
+
+        result = output.getvalue()
+        assert result == snapshot
+
+    def test_deeply_nested_lists(self, snapshot):
+        """Test deeply nested lists (3+ levels)."""
+        markdown = """- Level 1 item
+  - Level 2 item
+    - Level 3 item
+      - Level 4 item
+    - Another level 3 item
+  - Another level 2 item
+- Another level 1 item
+  - Level 2 under second item
+    - Level 3 under second item"""
+
+        output = io.StringIO()
+        console = create_test_console(output)
+        renderer = TerminalRenderer(console)
+
+        import mistune
+
+        markdown_parser = mistune.create_markdown(renderer=None)
+        tokens = markdown_parser(markdown)
+        renderer.render(tokens)
+
+        result = output.getvalue()
+        assert result == snapshot
+
+    def test_mixed_list_types(self, snapshot):
+        """Test mixing ordered and unordered lists."""
+        markdown = """1. First ordered item
+   - Unordered sub-item
+   - Another unordered sub-item
+     1. Nested ordered item
+     2. Another nested ordered item
+2. Second ordered item
+   - Mixed content here
+     - Deep nesting
+       1. Very deep ordered item"""
+
+        output = io.StringIO()
+        console = create_test_console(output)
+        renderer = TerminalRenderer(console)
+
+        import mistune
+
+        markdown_parser = mistune.create_markdown(renderer=None)
+        tokens = markdown_parser(markdown)
+        renderer.render(tokens)
+
+        result = output.getvalue()
+        assert result == snapshot
+
+    def test_cheesecake_recipe(self, snapshot):
+        """Test the original cheesecake recipe example that had nested list issues."""
+        markdown = """### Classic New York Style Cheesecake
+
+#### Ingredients:
+- **Crust:**
+  - 2 cups graham cracker crumbs (about 40 full crackers)
+  - 1/3 cup granulated sugar
+  - 1/2 cup unsalted butter, melted
+
+- **Cheese Filling:**
+  - 4 packages (8 oz each) cream cheese, at room temperature
+  - 1 cup granulated sugar
+  - 1 tablespoon vanilla extract
+  - 4 large eggs"""
+
+        output = io.StringIO()
+        console = create_test_console(output)
+        renderer = TerminalRenderer(console)
+
+        import mistune
+
+        markdown_parser = mistune.create_markdown(renderer=None)
+        tokens = markdown_parser(markdown)
+        renderer.render(tokens)
+
+        result = output.getvalue()
+        assert result == snapshot
+
     def test_blockquotes(self, snapshot):
         """Test blockquotes with formatting."""
         markdown = """> This is a blockquote with some important information.

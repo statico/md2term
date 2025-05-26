@@ -183,23 +183,6 @@ uv run pytest --snapshot-details
 
 The snapshot file is located at `tests/__snapshots__/test_md2term.ambr` and contains the expected terminal output for various markdown inputs.
 
-## Publishing
-
-To publish a new version to PyPI:
-
-```bash
-# Update version in pyproject.toml
-# Build the package
-uv build
-
-# Publish to PyPI (requires PyPI credentials)
-uv publish
-```
-
 ## License
 
-This project is open source. Feel free to use and modify as needed.
-
-```
-
-```
+This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.

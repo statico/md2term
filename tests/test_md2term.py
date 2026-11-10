@@ -624,3 +624,13 @@ def test_cli_basic():
     # Note: CLI may have exit code 1 due to streaming processing, but output should be correct
     assert "Test" in result.output
     assert "Hello world!" in result.output
+
+
+def test_width_zero_is_rejected(tmp_path):
+    """Test that --width 0 is rejected instead of rendering nothing."""
+    md_file = tmp_path / "zero.md"
+    md_file.write_text("# Hello\n")
+    runner = CliRunner(env={"FORCE_COLOR": "1", "TERM": "xterm-256color"})
+    result = runner.invoke(main, ["--width", "0", str(md_file)])
+    assert result.exit_code != 0
+    assert "width" in result.output.lower()

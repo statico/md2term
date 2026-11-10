@@ -737,7 +737,12 @@ def process_smart_stream(input_stream: TextIO, width: Optional[int] = None) -> N
 
 @click.command()
 @click.argument("input_file", type=click.File("r"), required=False)
-@click.option("--width", "-w", type=int, help="Override terminal width")
+@click.option(
+    "--width",
+    "-w",
+    type=click.IntRange(min=1),
+    help="Override terminal width (must be a positive number of columns)",
+)
 @click.version_option(version=__version__)
 def main(input_file: Optional[TextIO], width: Optional[int]) -> None:
     """
